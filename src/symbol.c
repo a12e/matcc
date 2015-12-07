@@ -1,7 +1,3 @@
-//
-// Created by abrooke on 06/12/15.
-//
-
 #include "symbol.h"
 #include "utility.h"
 

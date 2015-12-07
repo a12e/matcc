@@ -13,7 +13,7 @@ float           [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?
 %%
 
 [{}(),;=]		return yytext[0];
-[\+\-\*\/]          return yytext[0];
+[\+\-\*\/]      return yytext[0];
 
 int             return T_INT;
 float           return T_FLOAT;

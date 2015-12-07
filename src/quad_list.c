@@ -1,7 +1,3 @@
-//
-// Created by abrooke on 06/12/15.
-//
-
 #include "quad_list.h"
 #include "utility.h"
 #include "symbol.h"
@@ -11,7 +7,7 @@ unsigned int printed_quad_lists = 0;
 
 struct quad_list *quad_list_new(struct quad *quad) {
     struct quad_list *quad_list = safe_malloc(sizeof(struct quad_list));
-    quad_list->node = quad;
+    quad_list->quad = quad;
     quad_list->successor = NULL;
     return quad_list;
 }
@@ -42,10 +38,15 @@ void quad_list_concat(struct quad_list **dest, struct quad_list *src) {
     }
 }
 
-void quad_list_print(struct quad_list *list) {
-    printf("L%02i:\n", printed_quad_lists++);
+void quad_list_print(FILE *f, struct quad_list *list) {
+    fprintf(f, "L%02i:\n", printed_quad_lists++);
     for(; list != NULL; list = list->successor) {
-        print_quad(list->node);
+        print_quad(f, list->quad);
     }
 }
 
+void quad_list_delete(struct quad_list *list) {
+    for(; list != NULL; list = list->successor) {
+        quad_delete(list->quad);
+    }
+}

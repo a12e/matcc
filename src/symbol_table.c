@@ -1,7 +1,3 @@
-//
-// Created by abrooke on 06/12/15.
-//
-
 #include "symbol_table.h"
 #include "actions.h"
 
@@ -26,20 +22,20 @@ struct symbol *symbol_table_lookup(char *name) {
 }
 
 
-void symbol_table_print_variables() {
+void symbol_table_print_variables(FILE *f) {
     for(size_t i = 0; i < symbol_table.size; i++)
         if(symbol_table.buckets[i] != NULL) {
             for(ht_bucket *bucket = symbol_table.buckets[i]; bucket != NULL; bucket = bucket->successor)
                 if(bucket->value->constant)
                     switch(bucket->value->type) {
-                        case INT: printf(".%s %8s %8d\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case INT: fprintf(f, ".%s %8s %8d\n", SYMBOL_TYPE_STR[bucket->value->type],
                                          bucket->value->name, bucket->value->initial_value.intval); break;
-                        case FLOAT: printf(".%s %8s %8f\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case FLOAT: fprintf(f, ".%s %8s %8f\n", SYMBOL_TYPE_STR[bucket->value->type],
                                          bucket->value->name, bucket->value->initial_value.floatval); break;
-                        case MATRIX: printf(".%s %8s %8f\n", SYMBOL_TYPE_STR[bucket->value->type], // TODO
+                        case MATRIX: fprintf(f, ".%s %8s %8f\n", SYMBOL_TYPE_STR[bucket->value->type], // TODO
                                            bucket->value->name, bucket->value->initial_value.floatval); break;
                     }
                 else
-                    printf(".%s %8s\n", SYMBOL_TYPE_STR[bucket->value->type], bucket->value->name);
+                    fprintf(f, ".%s %8s\n", SYMBOL_TYPE_STR[bucket->value->type], bucket->value->name);
         }
 }

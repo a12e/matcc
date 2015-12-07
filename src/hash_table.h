@@ -1,7 +1,3 @@
-//
-// Created by abrooke on 10/11/15.
-//
-
 /*
  *  Table de hashage classique
  *  Copie les clés lors d'un ajout (ht_keycpy) mais pas les valeurs

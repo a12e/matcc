@@ -1,7 +1,3 @@
-//
-// Created by abrooke on 06/12/15.
-//
-
 #include <stddef.h>
 #include "quad.h"
 #include "utility.h"
@@ -24,11 +20,13 @@ const char *QUAD_OP_STR[MAX_QUAD] = {
         "div"
 };
 
-void print_quad(struct quad *q) {
+void print_quad(FILE *f, struct quad *q) {
     if(q->op2)
-        printf("%4s %8s %8s %8s\n", QUAD_OP_STR[q->op], q->res->name, q->op1->name, q->op2->name);
+        fprintf(f, "%4s %8s %8s %8s\n", QUAD_OP_STR[q->op], q->res->name, q->op1->name, q->op2->name);
     else
-        printf("%4s %8s %8s\n", QUAD_OP_STR[q->op], q->res->name, q->op1->name);
+        fprintf(f, "%4s %8s %8s\n", QUAD_OP_STR[q->op], q->res->name, q->op1->name);
 }
 
-
+void quad_delete(struct quad *q) {
+    safe_free(q);
+}

@@ -1,7 +1,3 @@
-//
-// Created by abrooke on 06/12/15.
-//
-
 #ifndef MATCC_SYMBOL_H
 #define MATCC_SYMBOL_H
 

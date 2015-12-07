@@ -1,7 +1,3 @@
-//
-// Created by abrooke on 17/11/15.
-//
-
 #ifndef MATCC_ACTIONS_H
 #define MATCC_ACTIONS_H
 

@@ -1,7 +1,3 @@
-//
-// Created by abrooke on 10/11/15.
-//
-
 #include <stdlib.h>
 #include <string.h>
 #include "hash_table.h"
@@ -75,10 +71,12 @@ int ht_exists(hashtable_t *ht, ht_key key) {
 
 void ht_free(hashtable_t *ht) {
     for(size_t i = 0; i < ht->size; i++)
-        for(ht_bucket *item = ht->buckets[i]; item != NULL; item = item->successor) {
+        for(ht_bucket *item = ht->buckets[i]; item != NULL;) {
             safe_free(item->key);
             symbol_delete(item->value);
+            ht_bucket *successor = item->successor;
             safe_free(item);
+            item = successor;
         }
     safe_free(ht->buckets);
 }
