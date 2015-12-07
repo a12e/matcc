@@ -31,7 +31,7 @@ void ht_init(hashtable_t *ht, size_t size) {
     }
 
     ht->size = size;
-    ht->items = safe_calloc(size, sizeof(ht_item *));
+    ht->buckets = safe_calloc(size, sizeof(ht_bucket *));
     ht->last_error = HT_OK;
 }
 
@@ -43,18 +43,18 @@ void ht_put(hashtable_t *ht, ht_key key, ht_val value) {
         return;
     }
 
-    ht_item *item = safe_malloc(sizeof(ht_item));
+    ht_bucket *item = safe_malloc(sizeof(ht_bucket));
     item->key = ht_keycpy(key);
     item->value = value;
-    item->successor = ht->items[hash];
-    ht->items[hash] = item;
+    item->successor = ht->buckets[hash];
+    ht->buckets[hash] = item;
     ht->last_error = HT_OK;
 }
 
 ht_val ht_get(hashtable_t *ht, ht_key key) {
     ht_hash hash = ht_dohash(ht, key);
 
-    for(ht_item *item = ht->items[hash]; item != NULL; item = item->successor)
+    for(ht_bucket *item = ht->buckets[hash]; item != NULL; item = item->successor)
         if(ht_keycmp(item->key, key) == 0) {
             ht->last_error = HT_OK;
             return item->value;
@@ -75,19 +75,20 @@ int ht_exists(hashtable_t *ht, ht_key key) {
 
 void ht_free(hashtable_t *ht) {
     for(size_t i = 0; i < ht->size; i++)
-        for(ht_item *item = ht->items[i]; item != NULL; item = item->successor) {
-            free(item->key);
-            free(item);
+        for(ht_bucket *item = ht->buckets[i]; item != NULL; item = item->successor) {
+            safe_free(item->key);
+            symbol_delete(item->value);
+            safe_free(item);
         }
-    free(ht->items);
+    safe_free(ht->buckets);
 }
 
 void ht_dump(hashtable_t *ht) {
     printf("hashtable (%lu buckets)\n", ht->size);
     for(size_t i = 0; i < ht->size; i++)
-        if(ht->items[i] != NULL) {
-            printf("  bucket #%lu (%p)\n", i, ht->items[i]);
-            for(ht_item *item = ht->items[i]; item != NULL; item = item->successor)
+        if(ht->buckets[i] != NULL) {
+            printf("  bucket #%lu (%p)\n", i, ht->buckets[i]);
+            for(ht_bucket *item = ht->buckets[i]; item != NULL; item = item->successor)
                 printf("    - %s = %p\n", item->key, item->value);
         }
 }

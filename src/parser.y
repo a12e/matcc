@@ -1,50 +1,47 @@
 %{
 
 #include "actions.h"
+#include "symbol_table.h"
+#include "symbol.h"
+#include "quad_list.h"
 
 #define YYDEBUG 1
 
 extern int yylex(void);
 extern int yylineno;
-extern int tokenpos;
-extern char linebuf[];
 extern char *yytext;
 
 void yyerror(char const *s) {
-	fprintf(stderr, "line %d: %s\n", yylineno, s);
+	fprintf(stderr, "line %d: %s when reading token %s\n", yylineno, s, yytext);
 }
-
-
-hashtable_t symbol_table;
-iinstr_list instructions = NULL;
 
 %}
 
-/* Attributs des tokens */
+/* Token attributes */
 %union {
 	char *name;
-    struct {
-        union {
-            int intval;
-            float floatval;
-        };
-        uint register_id;
-    };
+	int intval;
+    float floatval;
+    enum symbol_type type;
+    struct symbol* symbol;
 }
 
-/* Tokens fournits par le lexer */
-%token                  INT
-%token			        FLOAT
-%token			        MATRIX
-%token                  IF
-%token                  ELSE
+/* Lex tokens */
+%token                  T_INT T_FLOAT T_MATRIX
+%token                  IF ELSE
 %token                  WHILE
 %token                  FOR
 %token                  RETURN
 %token	<name>	        IDENTIFIER
 %token  <intval>        INTEGERCONST
 %token  <floatval>      FLOATCONST
-%type   <register_id>   int_expression
+
+/* Analysis variables */
+%type   <symbol>        variable_declaration
+%type   <symbol>        assignation
+%type   <symbol>        expression
+%type   <symbol>        identifier
+%type   <type>          type
 
 %%
 
@@ -53,29 +50,38 @@ program					:	functions
 functions				:	function
 						|	function functions
 
-function				:	INT IDENTIFIER '(' ')'
+function				:	type IDENTIFIER '(' ')'
 							'{' statements '}'
 
 statements				:	statement ';'
-						|	statement ';' statements
+						|	statement ';'
+							statements
 
-statement				:	variable_decl_list
+statement				:	variable_declaration
+						|   assignation
 
-variable_decl_list      :   type variable_declarations
+variable_declaration    :   type IDENTIFIER                 { $$ = declare($1, $2); }
+                        |   type IDENTIFIER '=' expression  { $$ = declare_and_assign($1, $2, $4); }
 
-variable_declarations   :   variable_declaration
-                        |   variable_declaration ',' variable_declarations
+assignation             :   identifier    '=' expression    { $$ = assign($1, $3); }
+						|   identifier '+''=' expression    { $$ = assign($1, add($1, $4)); }
+						|   identifier '-''=' expression    { $$ = assign($1, substract($1, $4)); }
+						|   identifier '*''=' expression    { $$ = assign($1, multiply($1, $4)); }
+						|   identifier '/''=' expression    { $$ = assign($1, divide($1, $4)); }
 
-variable_declaration    :   IDENTIFIER                          { declare_int($1); }
-                        |   IDENTIFIER '=' int_expression       { declare_int_with_init($1, $3);  }
+expression              :   INTEGERCONST                    { $$ = declare_int_constant($1); }
+                        |   FLOATCONST                      { $$ = declare_float_constant($1); }
+                        |   identifier                      { $$ = $1; }
+                        |   expression '+' expression       { $$ = add($1, $3); }
+                        |   expression '-' expression       { $$ = substract($1, $3); }
+                        |   expression '*' expression       { $$ = multiply($1, $3); }
+                        |   expression '/' expression       { $$ = divide($1, $3); }
 
-int_expression          :   INTEGERCONST                        { $$ = load_constant($1); }
-                        |   IDENTIFIER                          { $$ = load_symbol($1); }
-                        |   int_expression '+' int_expression   { $$ = int_add($1, $3); }
+identifier              :   IDENTIFIER                      { $$ = symbol_table_lookup($1); }
 
-type                    :   INT     
-                        |   FLOAT  
-                        |   MATRIX
+type                    :   T_INT                           { $$ = INT; }
+						|   T_FLOAT                         { $$ = FLOAT; }
+						|   T_MATRIX                        { $$ = MATRIX; }
 
 %%
 
@@ -100,10 +106,12 @@ int main(int argc, char **argv)
 
 	yyparse();
 
-    //ht_dump(&symtab);
-    ht_free(&symbol_table);
+	printf("=variables\n");
+	symbol_table_print_variables();
+	printf("=code\n");
+    quad_list_print(quad_list);
 
-    print_iinstr_list(&instructions);
+    ht_free(&symbol_table);
 
 	return EXIT_SUCCESS;
 }

@@ -24,6 +24,12 @@ void *safe_calloc(size_t nmemb, size_t size) {
     return ptr;
 }
 
+void safe_free(void *ptr) {
+    if(ptr) {
+        free(ptr);
+    }
+}
+
 char *safe_strdup(const char *s) {
     char *ptr = strdup(s);
     check_pointer(ptr);

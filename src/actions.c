@@ -4,31 +4,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdarg.h>
 #include "actions.h"
-#include "hash_table.h"
-#include "instructions.h"
-#include "parser.h"
+#include "symbol_table.h"
+#include "quad_list.h"
 
 extern int yylineno;
-extern hashtable_t symbol_table;
-extern iinstr_list instructions;
-
-typedef uint bool;
-#define true 1
-#define false 0
-
-bool allocated_registers[32] = {
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0, // Temporary t0->t3 (not preserved across call)
-        0, 0, 0, 0, // Temporary t4->t7 (not preserved across call)
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0
-};
 
 const char *REGSTR[32] = {
         "", "", "", "",
@@ -50,85 +31,67 @@ void abort_parsing(char const *fmt, ...) {
     va_end(argptr);
 
     fprintf(stderr, "\n");
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
-
-register_id allocate_temp_register() {
-    for(uint i = 8; i < 16; i++) {
-        if(allocated_registers[i] == false) {
-            allocated_registers[i] = true;
-            return i;
-        }
+void ensure_type_match(struct symbol *s1, struct symbol *s2) {
+    if(s1->type != s2->type) {
+        abort_parsing("type of %s (%s) and %s (%s) do not match\n",
+        s1->name, SYMBOL_TYPE_STR[s1->type], s2->name, SYMBOL_TYPE_STR[s2->type]);
     }
-    abort_parsing("Exhausted all temporary registers :(");
 }
 
-void free_register(register_id rid) {
-    allocated_registers[rid] = false;
+struct symbol *declare(enum symbol_type type, char *name) {
+    return symbol_table_push(symbol_new(name, type));
 }
 
-symbol *create_symbol(int type, register_id rid) {
-    symbol *new_symbol = safe_malloc(sizeof(symbol));
-    new_symbol->type = type;
-    new_symbol->rid = rid;
-    return new_symbol;
+struct symbol *assign(struct symbol *dest, struct symbol *src) {
+    quad_gen(MOVE, dest, src, NULL);
+    return dest;
 }
 
-void free_symbol(symbol *s) {
-    free(s);
+struct symbol *declare_and_assign(enum symbol_type type, char *name, struct symbol *src) {
+    struct symbol *s = declare(type, name);
+    return assign(s, src);
 }
 
-register_id declare_int(char *name) {
-    if(ht_exists(&symbol_table, name))
-        abort_parsing("symbol '%s' has already been defined", name);
-
-    register_id affected_register = allocate_temp_register();
-    symbol *new_symbol = create_symbol(INT, affected_register);
-    ht_put(&symbol_table, name, new_symbol);
-
-    return affected_register;
+struct symbol *declare_int_constant(int intval) {
+    union symbol_initial_value value;
+    value.intval = intval;
+    return symbol_table_push(symbol_new_const(INT, value));
 }
 
-register_id declare_int_with_init(char *name, register_id initial_value_register) {
-    register_id new_symbol_register = declare_int(name);
-
-    assign_to(new_symbol_register, initial_value_register);
-    free_register(initial_value_register);
-
-    return new_symbol_register;
+struct symbol *declare_float_constant(float floatval) {
+    union symbol_initial_value value;
+    value.floatval = floatval;
+    return symbol_table_push(symbol_new_const(FLOAT, value));
 }
 
-register_id load_constant(int integer_constant) {
-    register_id affected_register = allocate_temp_register();
-
-    iinstr_put(&instructions, "li %s %d", REGSTR[affected_register], integer_constant);
-
-    return affected_register;
+struct symbol *add(struct symbol *op1, struct symbol *op2) {
+    ensure_type_match(op1, op2);
+    struct symbol *res = symbol_new_temp(op1->type);
+    quad_gen(ADD, res, op1, op2);
+    return symbol_table_push(res);
 }
 
-register_id load_symbol(char *name) {
-    symbol *loaded_symbol = ht_get(&symbol_table, name);
-
-    if(ht_last_error(&symbol_table) == HT_NOTFOUND)
-        abort_parsing("unknown symbol %s", name);
-
-    return loaded_symbol->rid;
+struct symbol *substract(struct symbol *op1, struct symbol *op2) {
+    ensure_type_match(op1, op2);
+    struct symbol *res = symbol_new_temp(op1->type);
+    quad_gen(SUB, res, op1, op2);
+    return symbol_table_push(res);
 }
 
-void assign_to(register_id destination, register_id source) {
-    iinstr_put(&instructions, "move %s %s",
-               REGSTR[destination],
-               REGSTR[source]);
+struct symbol *multiply(struct symbol *op1, struct symbol *op2) {
+    ensure_type_match(op1, op2);
+    struct symbol *res = symbol_new_temp(op1->type);
+    quad_gen(MUL, res, op1, op2);
+    return symbol_table_push(res);
 }
 
-register_id int_add(register_id a, register_id b) {
-    register_id result_register = allocate_temp_register();
-
-    iinstr_put(&instructions, "add %s %s %s",
-               REGSTR[result_register],
-               REGSTR[a],
-               REGSTR[b]);
-
-    return result_register;
+struct symbol *divide(struct symbol *op1, struct symbol *op2) {
+    ensure_type_match(op1, op2);
+    struct symbol *res = symbol_new_temp(op1->type);
+    quad_gen(DIV, res, op1, op2);
+    return symbol_table_push(res);
 }
+

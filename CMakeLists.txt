@@ -12,10 +12,24 @@ ADD_FLEX_BISON_DEPENDENCY(lexer parser)
 
 # Création de l'exécutable final
 add_executable(matcc
+        ${FLEX_lexer_OUTPUTS}
+        ${BISON_parser_OUTPUTS}
+
+        src/actions.h
+		src/actions.c
+        src/utility.h
 		src/utility.c
+        src/hash_table.h
 		src/hash_table.c
-		${FLEX_lexer_OUTPUTS}
-		${BISON_parser_OUTPUTS} src/instructions.c src/instructions.h src/actions.c src/actions.h)
+        src/quad.h
+        src/quad.c
+        src/quad_list.h
+        src/quad_list.c
+        src/symbol.h
+        src/symbol.c
+        src/symbol_table.h
+        src/symbol_table.c
+        )
 
 include_directories(src)
 

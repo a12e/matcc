@@ -10,21 +10,21 @@
 #include <string.h>
 #include <stdarg.h>
 #include "hash_table.h"
-#include "instructions.h"
 #include "utility.h"
+#include "symbol.h"
 
-typedef uint register_id;
+void abort_parsing(char const *fmt, ...);
+void ensure_type_match(struct symbol *s1, struct symbol *s2);
 
-typedef struct {
-    int type;
-    register_id rid;
-} symbol;
+struct symbol *declare(enum symbol_type type, char *name);
+struct symbol *assign(struct symbol *dest, struct symbol *src);
+struct symbol *declare_and_assign(enum symbol_type type, char *name, struct symbol *src);
+struct symbol *declare_int_constant(int intval);
+struct symbol *declare_float_constant(float floatval);
 
-register_id declare_int(char *name);
-register_id declare_int_with_init(char *name, register_id initial_value_register);
-register_id load_constant(int integer_constant);
-register_id load_symbol(char *name);
-void assign_to(register_id destination, register_id source);
-register_id int_add(register_id a, register_id b);
+struct symbol *add(struct symbol *op1, struct symbol *op2);
+struct symbol *substract(struct symbol *op1, struct symbol *op2);
+struct symbol *multiply(struct symbol *op1, struct symbol *op2);
+struct symbol *divide(struct symbol *op1, struct symbol *op2);
 
 #endif //MATCC_ACTIONS_H

@@ -12,16 +12,17 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "symbol.h"
 
 typedef size_t ht_hash;
 typedef char *ht_key;
-typedef void *ht_val;
+typedef struct symbol *ht_val;
 
-typedef struct ht_item_s {
+typedef struct ht_bucket_s {
     ht_key key;
     ht_val value;
-    struct ht_item_s *successor;
-} ht_item;
+    struct ht_bucket_s *successor;
+} ht_bucket;
 
 typedef enum {
     HT_OK = 0,
@@ -32,7 +33,7 @@ typedef enum {
 
 typedef struct {
     size_t size;
-    ht_item **items;
+    ht_bucket **buckets;
     ht_error last_error;
 } hashtable_t;
 

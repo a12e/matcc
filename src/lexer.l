@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "symbol.h"
 #include "parser.h"
 #include "utility.h"
 %}
@@ -11,11 +12,12 @@ float           [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?
 
 %%
 
-[{}(),;=+]		return yytext[0];
+[{}(),;=]		return yytext[0];
+[\+\-\*\/]          return yytext[0];
 
-int             return INT;
-float           return FLOAT;
-matrix          return MATRIX;
+int             return T_INT;
+float           return T_FLOAT;
+matrix          return T_MATRIX;
 if              return IF;
 else            return ELSE;
 while           return WHILE;
