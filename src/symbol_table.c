@@ -28,14 +28,14 @@ void symbol_table_print_variables(FILE *f) {
             for(ht_bucket *bucket = symbol_table.buckets[i]; bucket != NULL; bucket = bucket->successor)
                 if(bucket->value->constant)
                     switch(bucket->value->type) {
-                        case INT: fprintf(f, ".%s %8s %8d\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case INT: fprintf(f, ".%s %6s %6d\n", SYMBOL_TYPE_STR[bucket->value->type],
                                          bucket->value->name, bucket->value->initial_value.intval); break;
-                        case FLOAT: fprintf(f, ".%s %8s %8f\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case FLOAT: fprintf(f, ".%s %6s %6f\n", SYMBOL_TYPE_STR[bucket->value->type],
                                          bucket->value->name, bucket->value->initial_value.floatval); break;
-                        case MATRIX: fprintf(f, ".%s %8s %8f\n", SYMBOL_TYPE_STR[bucket->value->type], // TODO
+                        case MATRIX: fprintf(f, ".%s %6s %6f\n", SYMBOL_TYPE_STR[bucket->value->type], // TODO
                                            bucket->value->name, bucket->value->initial_value.floatval); break;
                     }
                 else
-                    fprintf(f, ".%s %8s\n", SYMBOL_TYPE_STR[bucket->value->type], bucket->value->name);
+                    fprintf(f, ".%s %6s\n", SYMBOL_TYPE_STR[bucket->value->type], bucket->value->name);
         }
 }

@@ -1,9 +1,9 @@
+#include <stdarg.h>
 #include "quad_list.h"
 #include "utility.h"
 #include "symbol.h"
 
 struct quad_list *quad_list = NULL;
-unsigned int printed_quad_lists = 0;
 
 struct quad_list *quad_list_new(struct quad *quad) {
     struct quad_list *quad_list = safe_malloc(sizeof(struct quad_list));
@@ -23,25 +23,45 @@ void quad_list_push(struct quad_list **dest, struct quad *quad) {
     }
 }
 
-void quad_gen(enum quad_op op, struct symbol *res, struct symbol *op1, struct symbol *op2) {
-    quad_list_push(&quad_list, quad_new(op, res, op1, op2));
+void quad_list_concat(struct quad_list **dest, int sources_count, ...) {
+    va_list argptr;
+    va_start(argptr, sources_count);
+
+    for(int i = 0; i < sources_count; i++) {
+        struct quad_list *src = va_arg(argptr, struct quad_list *);
+        if (*dest == NULL) {
+            *dest = src;
+        }
+        else {
+            struct quad_list *l = *dest;
+            for (; l->successor != NULL; l = l->successor);
+            l->successor = src;
+        }
+    }
+
+    va_end(argptr);
 }
 
-void quad_list_concat(struct quad_list **dest, struct quad_list *src) {
-    if(*dest == NULL) {
-        *dest = src;
+void quad_list_complete(struct quad_list *list, struct symbol *label) {
+    for(; list != NULL; list = list->successor) {
+        list->quad->res = label;
     }
-    else {
-        struct quad_list *l = *dest;
-        for(; l->successor != NULL; l = l->successor);
-        l->successor = src;
+}
+
+size_t quad_list_size(struct quad_list *list) {
+    size_t size = 0;
+    for(; list != NULL; list = list->successor) {
+        size++;
     }
+    return size;
 }
 
 void quad_list_print(FILE *f, struct quad_list *list) {
-    fprintf(f, "L%02i:\n", printed_quad_lists++);
+    fprintf(f, "(%zu quads)\n", quad_list_size(list));
+    unsigned int quad_counter = 0;
     for(; list != NULL; list = list->successor) {
-        print_quad(f, list->quad);
+        fprintf(f, "%04u: ", quad_counter++);
+        quad_print(f, list->quad);
     }
 }
 
@@ -50,3 +70,4 @@ void quad_list_delete(struct quad_list *list) {
         quad_delete(list->quad);
     }
 }
+

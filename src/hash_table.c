@@ -69,6 +69,15 @@ int ht_exists(hashtable_t *ht, ht_key key) {
     return 0;
 }
 
+size_t ht_size(hashtable_t *ht) {
+    size_t size = 0;
+    for(size_t i = 0; i < ht->size; i++)
+        if(ht->buckets[i] != NULL)
+            for(ht_bucket *item = ht->buckets[i]; item != NULL; item = item->successor)
+                size++;
+    return size;
+}
+
 void ht_free(hashtable_t *ht) {
     for(size_t i = 0; i < ht->size; i++)
         for(ht_bucket *item = ht->buckets[i]; item != NULL;) {
@@ -96,3 +105,5 @@ ht_error ht_last_error(hashtable_t *ht) {
     ht->last_error = HT_OK;
     return error;
 }
+
+

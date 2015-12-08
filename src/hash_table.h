@@ -40,6 +40,7 @@ void        ht_init     (hashtable_t *ht, size_t size);
 void        ht_put      (hashtable_t *ht, ht_key key, ht_val value);
 ht_val      ht_get      (hashtable_t *ht, ht_key key);
 int         ht_exists   (hashtable_t *ht, ht_key key);
+size_t      ht_size     (hashtable_t *ht);
 void        ht_free     (hashtable_t *ht);
 void        ht_dump     (hashtable_t *ht);
 ht_error    ht_last_error(hashtable_t *ht);

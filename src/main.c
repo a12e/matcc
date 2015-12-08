@@ -4,8 +4,9 @@
 #include "symbol_table.h"
 #include "quad_list.h"
 #include "utility.h"
+#include "actions.h"
+#include <parser.h>
 
-extern int yylineno;
 extern char *yytext;
 extern FILE *yyin;
 extern int yydebug;
@@ -23,7 +24,8 @@ void generate_mips();
 void generate_binary();
 
 void yyerror(char const *s) {
-    fprintf(stderr, "line %d: %s when reading token %s\n", yylineno, s, yytext);
+    fprintf(stderr, "line %d:%d-%d %s when reading token %s\n",
+            yylloc.first_line, yylloc.first_column, yylloc.last_column, s, yytext);
 }
 
 void print_help_and_exit(char *progname, int exit_code) {
@@ -99,9 +101,9 @@ void generate_quads() {
 
     yyparse();
 
-    fprintf(quad_file, "=variables\n");
+    fprintf(quad_file, "=variables (%zu symbols)\n", ht_size(&symbol_table));
     symbol_table_print_variables(quad_file);
-    fprintf(quad_file, "=code\n");
+    fprintf(quad_file, "=code ");
     quad_list_print(quad_file, quad_list);
 
     quad_list_delete(quad_list);

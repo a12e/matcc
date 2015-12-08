@@ -19,7 +19,7 @@ struct symbol *symbol_new(char *name, enum symbol_type type) {
 
 struct symbol *symbol_new_temp(enum symbol_type type) {
     char temp_name[32];
-    snprintf(temp_name, 32, "temp_%d", temps_count++);
+    snprintf(temp_name, 32, "tmp%d", temps_count++);
     struct symbol *s = symbol_new(temp_name, type);
     s->temporary = true;
     return s;
@@ -27,7 +27,7 @@ struct symbol *symbol_new_temp(enum symbol_type type) {
 
 struct symbol *symbol_new_const(enum symbol_type type, union symbol_initial_value value) {
     char constant_name[32];
-    snprintf(constant_name, 32, "const_%d", constants_count++);
+    snprintf(constant_name, 32, "cst%d", constants_count++);
     struct symbol *s = symbol_new(constant_name, type);
     s->initial_value = value;
     s->constant = true;
