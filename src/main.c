@@ -4,7 +4,8 @@
 #include "symbol_table.h"
 #include "quad_list.h"
 #include "utility.h"
-#include "actions.h"
+#include "parsing/actions.h"
+#include "mips/translation.h"
 #include <parser.h>
 
 extern char *yytext;
@@ -88,6 +89,9 @@ int main(int argc, char **argv) {
     }
     else {
         // Generating MIPS from QUADS
+        compute_symbols_lifetime();
+        print_symbols_lifetime(stderr);
+        generate_code();
     }
 
     quad_list_delete(quad_list);

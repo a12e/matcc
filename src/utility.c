@@ -20,6 +20,12 @@ void *safe_calloc(size_t nmemb, size_t size) {
     return ptr;
 }
 
+void *safe_realloc(void *ptr, size_t size) {
+    void *res = realloc(ptr, size);
+    check_pointer(res);
+    return res;
+}
+
 void safe_free(void *ptr) {
     if(ptr) {
         free(ptr);

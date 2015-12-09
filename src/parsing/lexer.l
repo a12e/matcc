@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-#include "actions.h"
+#include "parsing/actions.h"
 #include "symbol.h"
 #include "utility.h"
 #include "parser.h"

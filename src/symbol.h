@@ -20,7 +20,16 @@ struct symbol {
     union symbol_initial_value initial_value;
     bool temporary;
     bool constant;
+
+    int start_point;
+    int end_point;
+    int life_time;
+    int affected_register;
+    int stack_location;
 };
+
+#define POINT_INIT (-1)
+#define REGISTER_NONE (-1)
 
 struct symbol *symbol_new(char *name, enum symbol_type type);
 struct symbol *symbol_new_temp(enum symbol_type type);

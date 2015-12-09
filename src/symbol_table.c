@@ -1,5 +1,5 @@
 #include "symbol_table.h"
-#include "actions.h"
+#include "parsing/actions.h"
 
 hashtable_t symbol_table;
 

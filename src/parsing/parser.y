@@ -1,5 +1,5 @@
 %{
-#include "actions.h"
+#include "parsing/actions.h"
 #include "symbol_table.h"
 #include "symbol.h"
 #include "quad_list.h"
