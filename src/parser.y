@@ -88,7 +88,7 @@ function                :   type IDENTIFIER '(' ')'
 
 statements              :   statement                       { $$ = $1; }
                         |   statement
-                            statements                      { $$ = NULL; quad_list_concat(&$$, 2, $1, $2); }
+                            statements                      { $$ = quad_list_concat(2, $1, $2); }
                         |   '{' '}'                         { $$ = NULL; }
                         |   '{' statements '}'              { $$ = $2; }
 

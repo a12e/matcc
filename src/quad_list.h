@@ -13,7 +13,7 @@ extern struct quad_list *quad_list;
 
 struct quad_list *quad_list_new(struct quad *quad);
 void quad_list_push(struct quad_list **dest, struct quad *quad);
-void quad_list_concat(struct quad_list **dest, int sources_count, ...);
+struct quad_list *quad_list_concat(int sources_count, ...);
 void quad_list_complete(struct quad_list *list, struct symbol *label);
 void quad_list_print(FILE *f, struct quad_list *list);
 void quad_list_delete(struct quad_list *list);

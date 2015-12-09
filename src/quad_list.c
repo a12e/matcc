@@ -23,23 +23,25 @@ void quad_list_push(struct quad_list **dest, struct quad *quad) {
     }
 }
 
-void quad_list_concat(struct quad_list **dest, int sources_count, ...) {
+struct quad_list *quad_list_concat(int sources_count, ...) {
+    struct quad_list *result = NULL;
     va_list argptr;
     va_start(argptr, sources_count);
 
     for(int i = 0; i < sources_count; i++) {
         struct quad_list *src = va_arg(argptr, struct quad_list *);
-        if (*dest == NULL) {
-            *dest = src;
+        if (result == NULL) {
+            result = src;
         }
         else {
-            struct quad_list *l = *dest;
-            for (; l->successor != NULL; l = l->successor);
+            struct quad_list *l = result;
+            for(; l->successor != NULL; l = l->successor);
             l->successor = src;
         }
     }
 
     va_end(argptr);
+    return result;
 }
 
 void quad_list_complete(struct quad_list *list, struct symbol *label) {

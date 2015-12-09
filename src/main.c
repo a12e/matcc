@@ -13,15 +13,9 @@ extern int yydebug;
 extern int yyparse();
 
 FILE *source_file = NULL;
-FILE *quad_file = NULL;
-FILE *mips_file = NULL;
-FILE *binary_file = NULL;
-bool do_mips = true;
-bool do_binary = true;
-
-void generate_quads();
-void generate_mips();
-void generate_binary();
+FILE *output_file = NULL;
+bool stop_after_quads = false;
+bool stop_after_mips = false;
 
 void yyerror(char const *s) {
     fprintf(stderr, "line %d:%d-%d %s when reading token %s\n",
@@ -30,12 +24,14 @@ void yyerror(char const *s) {
 
 void print_help_and_exit(char *progname, int exit_code) {
     printf("Usage: %s [options] [source_file]\n", progname);
+    printf("\n");
     printf("If source_file is not specified, then read form stdin\n");
+    printf("\n");
     printf("Options are:\n");
     printf("-h\tdisplay this help\n");
     printf("-c\tstop the compilation after quad generation\n");
     printf("-S\tstop the compilation after assembler code generation\n");
-    printf("-o file\tspecifiy output file for quad code\n");
+    printf("-o file\tspecifiy output file (stdout by default)\n");
     printf("-d\tenable debug mode\n");
     exit(exit_code);
 }
@@ -50,10 +46,10 @@ int main(int argc, char **argv) {
             yydebug = 1;
         }
         else if(strcmp(argv[i], "-c") == 0) {
-            do_mips = false;
+            stop_after_quads = true;
         }
         else if(strcmp(argv[i], "-S") == 0) {
-            do_binary = false;
+            stop_after_mips = false;
         }
         else if(strcmp(argv[i], "-o") == 0) {
             if(++i >= argc) {
@@ -61,7 +57,7 @@ int main(int argc, char **argv) {
                 print_help_and_exit(argv[0], EXIT_FAILURE);
             }
 
-            quad_file = safe_fopen(argv[i], "w+");
+            output_file = safe_fopen(argv[i], "w+");
         }
         else {
             if(i == argc-1) { // last argument => source file
@@ -75,45 +71,30 @@ int main(int argc, char **argv) {
     }
 
     if(source_file == NULL) source_file = stdin;
-    if(quad_file == NULL) quad_file = stdout;
+    if(output_file == NULL) output_file = stdout;
 
-    generate_quads();
-    if(do_mips) {
-        generate_mips();
-        if(do_binary) {
-            generate_binary();
-        }
-    }
-
-    safe_fclose(source_file);
-    safe_fclose(quad_file);
-    safe_fclose(mips_file);
-    safe_fclose(binary_file);
-
-    return EXIT_SUCCESS;
-}
-
-void generate_quads() {
-    printf("Generating QUADS from MATC\n");
+    // Generating QUADS from MATC
 
     yyin = source_file;
     ht_init(&symbol_table, 16);
 
     yyparse();
 
-    fprintf(quad_file, "=variables (%zu symbols)\n", ht_size(&symbol_table));
-    symbol_table_print_variables(quad_file);
-    fprintf(quad_file, "=code ");
-    quad_list_print(quad_file, quad_list);
+    if(stop_after_quads) {
+        fprintf(output_file, "=variables (%zu symbols)\n", ht_size(&symbol_table));
+        symbol_table_print_variables(output_file);
+        fprintf(output_file, "=code ");
+        quad_list_print(output_file, quad_list);
+    }
+    else {
+        // Generating MIPS from QUADS
+    }
 
     quad_list_delete(quad_list);
     ht_free(&symbol_table);
-}
 
-void generate_mips() {
-    printf("Generating MIPS from QUADS\n");
-}
+    safe_fclose(source_file);
+    safe_fclose(output_file);
 
-void generate_binary() {
-    printf("Generating BINARY from MIPS\n");
+    return EXIT_SUCCESS;
 }

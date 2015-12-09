@@ -1,16 +1,16 @@
 project(matcc)
 cmake_minimum_required(VERSION 3.1)
-find_package(FLEX)
-find_package(BISON)
 set(CMAKE_C_STANDARD 99) # pour les déclarationd d'itérateurs dans le for
 
+find_package(FLEX)
+find_package(BISON)
 FLEX_TARGET(lexer src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.c)
 BISON_TARGET(parser src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 ADD_FLEX_BISON_DEPENDENCY(lexer parser)
 
-# Création de l'exécutable final
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(src)
+
 add_executable(matcc
 		${FLEX_lexer_OUTPUTS}
 		${BISON_parser_OUTPUTS}
@@ -32,10 +32,7 @@ add_executable(matcc
 		src/symbol_table.c
 )
 
-include_directories(src)
-
-# Link des bibliothèques
 target_link_libraries(matcc
-	libfl.a
-	${BISON_LIBRARIES})
+		${FLEX_LIBRARIES}
+		${BISON_LIBRARIES})
 
