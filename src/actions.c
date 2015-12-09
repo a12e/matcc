@@ -3,7 +3,6 @@
 #include <stdarg.h>
 #include "actions.h"
 #include "symbol_table.h"
-#include "quad_list.h"
 
 extern int yylineno;
 
@@ -47,7 +46,7 @@ struct expr_attr assign(struct symbol *dest, struct expr_attr src) {
 
     struct quad *q = quad_new(MOVE, dest, src.symbol, NULL);
     quad_set_comment(q, "%s = %d", dest->name, src.symbol->initial_value.intval); // TODO (temp)
-    quad_list_push(&result.code, q);
+    quad_list_concat(&result.code, 2, src.code, quad_list_new(q));
     result.symbol = dest;
 
     return result;
@@ -86,7 +85,7 @@ struct expr_attr binary_arithmetic_op(struct expr_attr expr1, enum quad_op op, s
     memset(&result, 0, sizeof(result));
 
     result.symbol = symbol_new_temp(expr1.symbol->type);
-    quad_list_push(&result.code, quad_new(op, result.symbol, expr1.symbol, expr2.symbol));
+    result.code = quad_list_new(quad_new(op, result.symbol, expr1.symbol, expr2.symbol));
     symbol_table_push(result.symbol);
 
     return result;
@@ -178,9 +177,49 @@ struct quad_list *control_if_else(struct cond_attr condition, struct symbol *tru
     quad_list_complete(condition.false_list, false_tag);
 
     struct quad *goto_end = quad_new(B, end_tag, NULL, NULL);
-    quad_set_comment(goto_end, "jump to the end of if-else block");
+    quad_set_comment(goto_end, "jump to the end of if-else control");
 
     struct quad_list *result = NULL;
     quad_list_concat(&result, 4, condition.code, true_statements, quad_list_new(goto_end), false_statements);
+    return result;
+}
+
+struct quad_list *control_while(struct symbol *condition_tag, struct cond_attr condition, struct symbol *statements_tag,
+                                struct quad_list *statements, struct symbol *end_tag) {
+    quad_list_complete(condition.true_list, statements_tag);
+    quad_list_complete(condition.false_list, end_tag);
+
+    struct quad *goto_condition = quad_new(B, condition_tag, NULL, NULL);
+    quad_set_comment(goto_condition, "jump to the condition of while control");
+
+    struct quad_list *result = NULL;
+    quad_list_concat(&result, 3, condition.code, statements, quad_list_new(goto_condition));
+    return result;
+}
+
+struct quad_list *control_do_while(struct symbol *statements_tag, struct quad_list *statements,
+                                   struct cond_attr condition, struct symbol *end_tag) {
+    quad_list_complete(condition.true_list, statements_tag);
+    quad_list_complete(condition.false_list, end_tag);
+
+    struct quad_list *result = NULL;
+    quad_list_concat(&result, 2, statements, condition.code);
+    return result;
+}
+
+struct quad_list *control_for(struct expr_attr variable_declaration, struct symbol *condition_tag,
+                              struct cond_attr condition, struct symbol *iteration_tag, struct expr_attr iteration,
+                              struct symbol *statements_tag, struct quad_list *statements, struct symbol *end_tag) {
+    quad_list_complete(condition.true_list, statements_tag);
+    quad_list_complete(condition.false_list, end_tag);
+
+    struct quad *goto_condition = quad_new(B, condition_tag, NULL, NULL);
+    quad_set_comment(goto_condition, "jump to the condition of for control");
+    struct quad *goto_iteration = quad_new(B, iteration_tag, NULL, NULL);
+    quad_set_comment(goto_iteration, "jump to the iteration of for control");
+
+    struct quad_list *result = NULL;
+    quad_list_concat(&result, 6, variable_declaration.code, condition.code, iteration.code,
+                     quad_list_new(goto_condition), statements, quad_list_new(goto_iteration));
     return result;
 }

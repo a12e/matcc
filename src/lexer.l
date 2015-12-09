@@ -18,7 +18,7 @@ int yycolumn = 1;
 
 identifier      [_a-zA-Z][_a-zA-Z0-9]*
 integer         [0-9]+
-float           [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?
+float           [-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?
 
 %%
 
@@ -44,6 +44,7 @@ false           return FALSE;
 >=              return GTE;
 
 while           return WHILE;
+do              return DO;
 for             return FOR;
 
 return          return RETURN;

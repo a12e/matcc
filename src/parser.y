@@ -52,7 +52,7 @@
 %token                  T_INT T_FLOAT T_MATRIX
 %token                  IF ELSE TRUE FALSE OR AND NOT
 %token                  EQ NEQ LT GT LTE GTE
-%token                  WHILE FOR
+%token                  WHILE DO FOR
 %token                  RETURN
 %token  <name>          IDENTIFIER
 %token  <intval>        INTEGERCONST
@@ -60,7 +60,7 @@
 
 /* Analysis variables */
 %type   <type>          type
-%type   <symbol>        identifier tag nexttag
+%type   <symbol>        identifier tag tag1 tag2
 %type   <quad_list>     statement statements instruction control_structure
 %type   <expr_attr>     expression assignation variable_declaration
 %type   <cond_attr>     condition
@@ -139,15 +139,26 @@ compar_op               :   EQ                              { $$ = BE; }
                         |   GTE                             { $$ = BGTE; }
 
 tag                     :   /* empty */                     { $$ = (declare_int_constant(next_quad)).symbol; }
-nexttag                 :   /* empty */                     { $$ = (declare_int_constant(next_quad+1)).symbol; }
+tag1                    :   /* empty */                     { $$ = (declare_int_constant(next_quad+1)).symbol; }
+tag2                    :   /* empty */                     { $$ = (declare_int_constant(next_quad+2)).symbol; }
 
 control_structure       :   IF '(' condition ')' tag
                             statements
                             tag                             { $$ = control_if($3, $5, $6, $7); }
                         |   IF '(' condition ')' tag
                             statements
-                            ELSE nexttag
+                            ELSE tag1
                             statements
-                            nexttag                         { $$ = control_if_else($3, $5, $6, $8, $9, $10); }
+                            tag1                            { $$ = control_if_else($3, $5, $6, $8, $9, $10); }
+                        |   WHILE '(' tag condition ')' tag
+                            statements tag1                 { $$ = control_while($3, $4, $6, $7, $8); }
+                        |   DO tag statements
+                            WHILE '('
+                            condition tag ')'';'            { $$ = control_do_while($2, $3, $6, $7); }
+                        |   FOR '('
+                            variable_declaration ';'
+                            tag condition ';'
+                            tag assignation ')'
+                            tag1 statements tag2            { $$ = control_for($3, $5, $6, $8, $9, $11, $12, $13); }
 
 %%
