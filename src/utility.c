@@ -33,6 +33,9 @@ void safe_free(void *ptr) {
 }
 
 char *safe_strdup(const char *s) {
+    if(s == NULL) {
+        return NULL;
+    }
     char *ptr = strdup(s);
     check_pointer(ptr);
     return ptr;

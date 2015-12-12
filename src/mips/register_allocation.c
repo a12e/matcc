@@ -24,7 +24,6 @@ void symbol_array_remove(struct symbol_array *array, size_t index) {
 }
 
 void symbol_array_free(struct symbol_array *array) {
-    safe_free(array->symbols);
     array->size = 0;
 }
 
@@ -39,10 +38,9 @@ int symbols_sort_inc_end_fn(const void *s1, const void *s2) {
 void generate_live_symbols() {
     memset(&live_symbols, 0, sizeof(live_symbols));
     for_each_symbol(bucket)
-    if(!bucket->value->constant)
         symbol_array_push(&live_symbols, bucket->value);
     for_each_symbol(bucket)
-    bucket->value->affected_register = REGISTER_NONE;
+        bucket->value->affected_register = REGISTER_NONE;
     qsort(live_symbols.symbols, live_symbols.size, sizeof(struct symbol *), &symbols_sort_inc_start_fn);
 }
 
@@ -50,7 +48,7 @@ void sort_active_symbols() {
     qsort(active_symbols.symbols, active_symbols.size, sizeof(struct symbol *), &symbols_sort_inc_end_fn);
 }
 
-const char *REGSTR[MAX_REGISTERS] = {
+char *REGSTR[MAX_REGISTERS] = {
         "$t0", "$t1", "$t2", "$t3",
         "$t4", "$t5", "$t6", "$t7",
 };
@@ -87,7 +85,6 @@ void free_register(int reg) {
     else {
         fprintf(stderr, "debug: freeing register %s of symbol %s\n",
                 REGSTR[reg], registers[reg].symbol->name);
-        registers[reg].symbol->affected_register = REGISTER_NONE;
         registers[reg].symbol = NULL;
     }
 }

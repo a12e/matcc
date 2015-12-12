@@ -10,6 +10,7 @@ extern hashtable_t symbol_table;
 struct symbol *symbol_table_push(struct symbol *s);
 struct symbol *symbol_table_lookup(char *name);
 void symbol_table_print_variables(FILE *f);
+void symbol_table_print_data_section(FILE *f);
 
 #define for_each_symbol(bucket) \
     for(size_t for_each_symbol_i = 0; for_each_symbol_i < symbol_table.size; for_each_symbol_i++) \

@@ -21,21 +21,32 @@ struct symbol *symbol_table_lookup(char *name) {
     return s;
 }
 
-
 void symbol_table_print_variables(FILE *f) {
     for(size_t i = 0; i < symbol_table.size; i++)
         if(symbol_table.buckets[i] != NULL) {
             for(ht_bucket *bucket = symbol_table.buckets[i]; bucket != NULL; bucket = bucket->successor)
                 if(bucket->value->constant)
                     switch(bucket->value->type) {
-                        case INT: fprintf(f, ".%s %6s %6d\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case INT: fprintf(f, "%5s %6s %6d\n", SYMBOL_TYPE_STR[bucket->value->type],
                                          bucket->value->name, bucket->value->initial_value.intval); break;
-                        case FLOAT: fprintf(f, ".%s %6s %6f\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case FLOAT: fprintf(f, "%5s %6s %6f\n", SYMBOL_TYPE_STR[bucket->value->type],
                                          bucket->value->name, bucket->value->initial_value.floatval); break;
-                        case MATRIX: fprintf(f, ".%s %6s %6f\n", SYMBOL_TYPE_STR[bucket->value->type], // TODO
+                        case MATRIX: fprintf(f, "%5s %6s %6f\n", SYMBOL_TYPE_STR[bucket->value->type], // TODO
                                            bucket->value->name, bucket->value->initial_value.floatval); break;
                     }
                 else
-                    fprintf(f, ".%s %6s\n", SYMBOL_TYPE_STR[bucket->value->type], bucket->value->name);
+                    fprintf(f, "%5s %6s\n", SYMBOL_TYPE_STR[bucket->value->type], bucket->value->name);
         }
 }
+
+void symbol_table_print_data_section(FILE *f) {
+    fprintf(f, ".data\n");
+    for_each_symbol(bucket) {
+                switch(bucket->value->type) {
+                    case INT: fprintf(f, "%s: .word %d\n", bucket->value->name, bucket->value->initial_value.intval); break;
+                    case FLOAT: fprintf(f, "%s: .float 0.0\n", bucket->value->name); break;
+                    case MATRIX: fprintf(f, "%s: .space 42\n", bucket->value->name); break;
+                }
+            }
+}
+

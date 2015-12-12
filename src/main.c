@@ -16,7 +16,6 @@ extern int yyparse();
 FILE *source_file = NULL;
 FILE *output_file = NULL;
 bool stop_after_quads = false;
-bool stop_after_mips = false;
 
 void yyerror(char const *s) {
     fprintf(stderr, "line %d:%d-%d %s when reading token %s\n",
@@ -31,7 +30,6 @@ void print_help_and_exit(char *progname, int exit_code) {
     printf("Options are:\n");
     printf("-h\tdisplay this help\n");
     printf("-c\tstop the compilation after quad generation\n");
-    printf("-S\tstop the compilation after assembler code generation\n");
     printf("-o file\tspecifiy output file (stdout by default)\n");
     printf("-d\tenable debug mode\n");
     exit(exit_code);
@@ -48,9 +46,6 @@ int main(int argc, char **argv) {
         }
         else if(strcmp(argv[i], "-c") == 0) {
             stop_after_quads = true;
-        }
-        else if(strcmp(argv[i], "-S") == 0) {
-            stop_after_mips = false;
         }
         else if(strcmp(argv[i], "-o") == 0) {
             if(++i >= argc) {
@@ -80,6 +75,7 @@ int main(int argc, char **argv) {
     ht_init(&symbol_table, 16);
 
     yyparse();
+    quad_list_push(&quad_list, quad_new_empty(NOP));
 
     if(stop_after_quads) {
         fprintf(output_file, "=variables (%zu symbols)\n", ht_size(&symbol_table));
@@ -90,8 +86,15 @@ int main(int argc, char **argv) {
     else {
         // Generating MIPS from QUADS
         compute_symbols_lifetime();
-        print_symbols_lifetime(stderr);
-        generate_code();
+        if(yydebug) print_symbols_lifetime(stderr);
+
+        symbol_table_print_data_section(output_file);
+
+        struct instruction_list *instruction_list = generate_code();
+        fprintf(output_file, "\n.text\n");
+        instruction_list_print(output_file, instruction_list);
+
+        instruction_list_delete(instruction_list);
     }
 
     quad_list_delete(quad_list);

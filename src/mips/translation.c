@@ -18,7 +18,7 @@ void compute_symbols_lifetime() {
     int quad_counter = 0;
     for(struct quad_list *list = quad_list; list != NULL; list = list->successor) {
         // res
-        {
+        if(list->quad->res) {
             if(list->quad->res->start_point == POINT_INIT)
                 list->quad->res->start_point = quad_counter;
             list->quad->res->end_point = MAX(list->quad->res->end_point, quad_counter);
@@ -70,29 +70,118 @@ void print_symbols_lifetime(FILE *f) {
 struct instruction_list *generate_code() {
     struct instruction_list *instructions = NULL;
     int quad_counter = 0;
-    int instruction_counter = 0;
 
     // Allocate registers for each symbol
     linear_scan_register_allocation();
 
+    // Put main label
+    instruction_list_push(&instructions, instruction_new_label("main", "entry point"));
+
     for(struct quad_list *list = quad_list; list != NULL; list = list->successor) {
+        char temp_str[32];
+        snprintf(temp_str, 32, "L%d", quad_counter);
+        instruction_list_push(&instructions, instruction_new_label(temp_str, list->quad->comment));
+
+        // Load constants in registers for this quad
+        if(list->quad->op1 && list->quad->op1->start_point == quad_counter) {
+            instruction_list_push(&instructions, instruction_new(
+                    "lw", REGSTR[list->quad->op1->affected_register], list->quad->op1->name, NULL));
+        }
+        if(list->quad->op2 && list->quad->op2->start_point == quad_counter) {
+            instruction_list_push(&instructions, instruction_new(
+                    "lw", REGSTR[list->quad->op1->affected_register], list->quad->op2->name, NULL));
+        }
+
         switch(list->quad->op) {
-            case NOP:break;
-            case MOVE:break;
-            case ADD:break;
-            case SUB:break;
-            case MUL:break;
-            case DIV:break;
-            case B:break;
-            case BE:break;
-            case BNE:break;
-            case BLT:break;
-            case BGT:break;
-            case BLTE:break;
-            case BGTE:break;
-            case MAX_QUAD:break;
+            case NOP:
+                instruction_list_push(&instructions, instruction_new("nop", NULL, NULL, NULL));
+                break;
+            case MOVE:
+                instruction_list_push(&instructions, instruction_new(
+                        "move",
+                        REGSTR[list->quad->res->affected_register],
+                        REGSTR[list->quad->op1->affected_register],
+                        NULL
+                ));
+                break;
+            case ADD:
+            case SUB:
+            case MUL:
+            case DIV: {
+                char *opcode;
+                if(list->quad->res->type == INT)
+                    switch(list->quad->op) {
+                        case ADD:   opcode = "add"; break;
+                        case SUB:   opcode = "sub"; break;
+                        case MUL:   opcode = "mul"; break;
+                        case DIV:   opcode = "div"; break;
+                        default:    opcode = NULL; break;
+                    }
+                else
+                    switch(list->quad->op) {
+                        case ADD:   opcode = "add.s"; break;
+                        case SUB:   opcode = "sub.s"; break;
+                        case MUL:   opcode = "mul.s"; break;
+                        case DIV:   opcode = "div.s"; break;
+                        default:    opcode = NULL; break;
+                    }
+                instruction_list_push(&instructions, instruction_new(
+                        opcode,
+                        REGSTR[list->quad->res->affected_register],
+                        REGSTR[list->quad->op1->affected_register],
+                        REGSTR[list->quad->op2->affected_register]
+                ));
+                break;
+            }
+            case B:
+                snprintf(temp_str, 32, "L%d", list->quad->res->initial_value.intval);
+                instruction_list_push(&instructions, instruction_new("b", temp_str, NULL, NULL));
+                break;
+            case BE:
+            case BNE:
+            case BLT:
+            case BGT:
+            case BLTE:
+            case BGTE: {
+                char *opcode;
+                if(list->quad->res->type == INT)
+                    switch(list->quad->op) {
+                        case BE:    opcode = "beq"; break;
+                        case BNE:   opcode = "bne"; break;
+                        case BLT:   opcode = "blt"; break;
+                        case BGT:   opcode = "bgt"; break;
+                        case BLTE:  opcode = "ble"; break;
+                        case BGTE:  opcode = "bge"; break;
+                        default:    opcode = NULL; break;
+                    }
+                else
+                    switch(list->quad->op) {
+                        case BE:    opcode = "c.eq.s"; break;
+                        case BNE:   opcode = "c.ne.s"; break;
+                        case BLT:   opcode = "c.lt.s"; break;
+                        case BGT:   opcode = "c.gt.s"; break;
+                        case BLTE:  opcode = "c.le.s"; break;
+                        case BGTE:  opcode = "c.ge.s"; break;
+                        default:    opcode = NULL; break;
+                    }
+
+                snprintf(temp_str, 32, "L%d", list->quad->res->initial_value.intval);
+                instruction_list_push(&instructions, instruction_new(
+                        opcode,
+                        REGSTR[list->quad->op1->affected_register],
+                        REGSTR[list->quad->op2->affected_register],
+                        temp_str
+                ));
+                break;
+            }
+            case MAX_QUAD: break;
         }
 
         quad_counter++;
     }
+
+    // Return
+    instruction_list_push(&instructions, instruction_new("jal", "$ra", NULL, NULL));
+
+    return instructions;
 }
