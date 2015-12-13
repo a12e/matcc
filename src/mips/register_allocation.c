@@ -4,6 +4,8 @@
 #include "register_allocation.h"
 #include "translation.h"
 
+extern bool debug;
+
 struct symbol_array {
     struct symbol **symbols;
     size_t size;
@@ -63,6 +65,7 @@ int next_free_register() {
         if(registers[i].symbol == NULL)
             return i;
     fprintf(stderr, "error: no more free register (why no spilling ?)\n");
+    return REGISTER_NONE;
 }
 
 void assign_register(int reg, struct symbol *s) {
@@ -73,7 +76,7 @@ void assign_register(int reg, struct symbol *s) {
     else {
         registers[reg].symbol = s;
         s->affected_register = reg;
-        fprintf(stderr, "debug: assigning register %s to symbol %s\n",
+        if(debug) fprintf(stderr, "debug: assigning register %s to symbol %s\n",
                 REGSTR[reg], registers[reg].symbol->name);
     }
 }
@@ -83,18 +86,20 @@ void free_register(int reg) {
         fprintf(stderr, "error: trying to free already free register %s\n", REGSTR[reg]);
     }
     else {
-        fprintf(stderr, "debug: freeing register %s of symbol %s\n",
+        if(debug) fprintf(stderr, "debug: freeing register %s of symbol %s\n",
                 REGSTR[reg], registers[reg].symbol->name);
         registers[reg].symbol = NULL;
     }
 }
 
-int new_stack_location() {
-    return 42;
+int current_stack_location = 0;
+int new_stack_location(size_t symbol_size) {
+    current_stack_location -= symbol_size;
+    return current_stack_location;
 }
 
 void expire_old_symbols(struct symbol *symbol) {
-    for(int j = 0; j < active_symbols.size; j++) {
+    for(size_t j = 0; j < active_symbols.size; j++) {
         if(active_symbols.symbols[j]->end_point >= symbol->start_point)
             return;
         // add register[j] to pool of free registers
@@ -110,12 +115,12 @@ void spill_symbol(struct symbol *symbol) {
         fprintf(stderr, "error: trying to spill symbol %s that is not active\n", symbol->name);
     }
     else {
-        fprintf(stderr, "debug: spilling symbol %s\n", symbol->name);
+        if(debug) fprintf(stderr, "debug: spilling symbol %s\n", symbol->name);
         struct symbol *spill = active_symbols.symbols[active_symbols.size - 1];
 
         if(symbol->end_point < spill->end_point) {
             symbol->affected_register = spill->affected_register;
-            spill->stack_location = new_stack_location();
+            spill->stack_location = new_stack_location(spill->size);
             // remove spill from active
             symbol_array_remove(&active_symbols, active_symbols.size - 1);
             // add symbol to the active array
@@ -123,7 +128,7 @@ void spill_symbol(struct symbol *symbol) {
             sort_active_symbols();
         }
         else {
-            symbol->stack_location = new_stack_location();
+            symbol->stack_location = new_stack_location(symbol->size);
         }
     }
 }
@@ -138,10 +143,10 @@ void linear_scan_register_allocation() {
     // Initialize active symbols
     memset(&active_symbols, 0, sizeof(active_symbols));
 
-    fprintf(stderr, "debug: %zu total symbols: { ", live_symbols.size);
+    if(debug) fprintf(stderr, "debug: %zu total symbols: { ", live_symbols.size);
     for(int j = 0; j < live_symbols.size; j++)
-        fprintf(stderr, "%s(start=%d) ", live_symbols.symbols[j]->name, live_symbols.symbols[j]->start_point);
-    fprintf(stderr, "}\n");
+        if(debug) fprintf(stderr, "%s(start=%d) ", live_symbols.symbols[j]->name, live_symbols.symbols[j]->start_point);
+    if(debug) fprintf(stderr, "}\n");
 
     // Assign register to every live symbol
     for(int i = 0; i < live_symbols.size; i++) {
@@ -160,15 +165,15 @@ void linear_scan_register_allocation() {
             sort_active_symbols();
         }
 
-        fprintf(stderr, "debug: %zu active symbols: { ", active_symbols.size);
+        if(debug) fprintf(stderr, "debug: %zu active symbols: { ", active_symbols.size);
         for(int j = 0; j < active_symbols.size; j++)
-            fprintf(stderr, "%s(end=%d) ", active_symbols.symbols[j]->name, active_symbols.symbols[j]->end_point);
-        fprintf(stderr, "}\n");
+            if(debug) fprintf(stderr, "%s(end=%d) ", active_symbols.symbols[j]->name, active_symbols.symbols[j]->end_point);
+        if(debug) fprintf(stderr, "}\n");
 
         max_assigned_registers = MAX(max_assigned_registers, active_symbols.size);
     }
 
-    fprintf(stderr, "max_assigned_registers = %zu\n", max_assigned_registers);
+    if(debug) fprintf(stderr, "max_assigned_registers = %zu\n", max_assigned_registers);
 
     symbol_array_free(&live_symbols);
     symbol_array_free(&active_symbols);

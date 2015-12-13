@@ -22,7 +22,7 @@ void *safe_calloc(size_t nmemb, size_t size) {
 
 void *safe_realloc(void *ptr, size_t size) {
     void *res = realloc(ptr, size);
-    check_pointer(res);
+    if(size != 0) check_pointer(res);
     return res;
 }
 

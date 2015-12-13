@@ -1,6 +1,6 @@
 project(matcc)
 cmake_minimum_required(VERSION 3.1)
-set(CMAKE_C_STANDARD 99) # pour les déclarationd d'itérateurs dans le for
+set(CMAKE_C_STANDARD 99)
 
 find_package(FLEX)
 find_package(BISON)
@@ -29,6 +29,8 @@ add_executable(matcc
 		src/hash_table.h
 		src/hash_table.c
 		src/main.c
+		src/matrix.h
+		src/matrix.c
 		src/quad.h
 		src/quad.c
 		src/quad_list.h
@@ -39,7 +41,6 @@ add_executable(matcc
 		src/symbol_table.c
 		src/utility.h
 		src/utility.c
-
 		)
 
 target_link_libraries(matcc

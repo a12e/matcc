@@ -3,6 +3,7 @@
 #include "symbol_table.h"
 #include "symbol.h"
 #include "quad_list.h"
+#include <matrix.h>
 #define YYDEBUG 1
 %}
 
@@ -43,7 +44,9 @@
     enum symbol_type type;
     struct symbol* symbol;
     struct quad_list *quad_list;
+    struct matrix_size matrix_size;
     struct expr_attr expr_attr;
+    struct matrix *matrix;
     struct cond_attr cond_attr;
     enum quad_op quad_op;
 }
@@ -62,7 +65,9 @@
 %type   <type>          type
 %type   <symbol>        identifier tag tag1 tag2
 %type   <quad_list>     statement statements instruction control_structure
+%type   <matrix_size>   size_expr
 %type   <expr_attr>     expression assignation variable_declaration
+%type   <matrix>        float_matrix float_array_list float_array float_list
 %type   <cond_attr>     condition
 %type   <quad_op>       compar_op
 
@@ -74,11 +79,12 @@
 
 extern int yylex(YYSTYPE *yylval_param, YYLTYPE *yylloc_param);
 extern void yyerror(char const *s);
+bool parse_successful = false;
 %}
 
 %%
 
-program                 :   functions
+program                 :   functions                       { parse_successful = true; }
 
 functions               :   function
                         |   function functions
@@ -100,6 +106,15 @@ instruction             :   variable_declaration            { $$ = $1.code; }
 
 variable_declaration    :   type IDENTIFIER                 { $$.code = NULL; declare($1, $2); safe_free($2); }
                         |   type IDENTIFIER '=' expression  { $$ = declare_and_assign($1, $2, $4); safe_free($2); }
+                        |   T_MATRIX IDENTIFIER size_expr   { $$.code = NULL; declare_matrix($2, $3); safe_free($2); }
+
+identifier              :   IDENTIFIER                      { $$ = symbol_table_lookup($1); safe_free($1); }
+
+type                    :   T_INT                           { $$ = INT; }
+                        |   T_FLOAT                         { $$ = FLOAT; }
+
+size_expr               :   '[' INTEGERCONST ']'                        { $$ = declare_matrix_size(1, $2); }
+						|   '[' INTEGERCONST ']' '[' INTEGERCONST ']'   { $$ = declare_matrix_size($2, $5); }
 
 assignation             :   identifier    '=' expression    { $$ = assign($1, $3); }
 /*
@@ -111,17 +126,25 @@ assignation             :   identifier    '=' expression    { $$ = assign($1, $3
 
 expression              :   INTEGERCONST                    { $$ = declare_int_constant($1); }
                         |   FLOATCONST                      { $$ = declare_float_constant($1); }
+                        |   '{' float_matrix '}'            { $$ = declare_matrix_constant($2); }
                         |   identifier                      { $$.code = NULL; $$.symbol = $1; }
                         |   expression '+' expression       { $$ = binary_arithmetic_op($1, ADD, $3); }
                         |   expression '-' expression       { $$ = binary_arithmetic_op($1, SUB, $3); }
                         |   expression '*' expression       { $$ = binary_arithmetic_op($1, MUL, $3); }
                         |   expression '/' expression       { $$ = binary_arithmetic_op($1, DIV, $3); }
 
-identifier              :   IDENTIFIER                      { $$ = symbol_table_lookup($1); safe_free($1); }
+float_matrix            :   float_list                      { $$ = $1; }
+						|   float_array_list                { $$ = $1; }
 
-type                    :   T_INT                           { $$ = INT; }
-                        |   T_FLOAT                         { $$ = FLOAT; }
-                        |   T_MATRIX                        { $$ = MATRIX; }
+float_array_list        :   float_array                     { $$ = $1; }
+						|   float_array_list ','
+							float_array                     { $$ = $1; matrix_append_row($$, $3); matrix_delete($3); }
+
+float_array             :   '{' float_list '}'              { $$ = $2; }
+
+float_list              :   FLOATCONST                      { $$ = matrix_new_with_value($1); }
+						|   float_list ','
+							FLOATCONST                      { $$ = $1; matrix_append_value($$, $3); }
 
 condition               :   condition OR  tag condition     { $$ = condition_or($1, $3, $4); }
                         |   condition AND tag condition     { $$ = condition_and($1, $3, $4); }

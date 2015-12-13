@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <matrix.h>
 #include "hash_table.h"
 #include "utility.h"
 #include "symbol.h"
@@ -24,6 +25,9 @@ struct expr_attr assign(struct symbol *dest, struct expr_attr src);
 struct expr_attr declare_and_assign(enum symbol_type type, char *name, struct expr_attr expr);
 struct expr_attr declare_int_constant(int intval);
 struct expr_attr declare_float_constant(float floatval);
+struct expr_attr declare_matrix_constant(struct matrix *matrix);
+struct matrix_size declare_matrix_size(size_t height, size_t width);
+struct symbol *declare_matrix(char *name, struct matrix_size size);
 
 struct expr_attr binary_arithmetic_op(struct expr_attr expr1, enum quad_op op, struct expr_attr expr2);
 

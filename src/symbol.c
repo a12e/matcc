@@ -12,8 +12,8 @@ struct symbol *symbol_new(char *name, enum symbol_type type) {
     struct symbol *s = safe_malloc(sizeof(struct symbol));
     s->name = safe_strdup(name);
     s->type = type;
-    s->temporary = false;
     s->constant = false;
+    s->size = 4;
     return s;
 }
 
@@ -21,7 +21,6 @@ struct symbol *symbol_new_temp(enum symbol_type type) {
     char temp_name[32];
     snprintf(temp_name, 32, "tmp%d", temps_count++);
     struct symbol *s = symbol_new(temp_name, type);
-    s->temporary = true;
     return s;
 }
 

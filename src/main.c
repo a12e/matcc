@@ -12,6 +12,8 @@ extern char *yytext;
 extern FILE *yyin;
 extern int yydebug;
 extern int yyparse();
+bool debug = false;
+extern bool parse_successful;
 
 FILE *source_file = NULL;
 FILE *output_file = NULL;
@@ -31,7 +33,8 @@ void print_help_and_exit(char *progname, int exit_code) {
     printf("-h\tdisplay this help\n");
     printf("-c\tstop the compilation after quad generation\n");
     printf("-o file\tspecifiy output file (stdout by default)\n");
-    printf("-d\tenable debug mode\n");
+    printf("-d\tenable matcc debug mode\n");
+    printf("-dd\tenable both matcc and YACC debug mode\n");
     exit(exit_code);
 }
 
@@ -41,7 +44,13 @@ int main(int argc, char **argv) {
             print_help_and_exit(argv[0], EXIT_SUCCESS);
         }
         else if(strcmp(argv[i], "-d") == 0) {
-            fprintf(stderr, "Debug mode enabled\n");
+            fprintf(stderr, "matcc debug mode enabled\n");
+            debug = true;
+        }
+        else if(strcmp(argv[i], "-dd") == 0) {
+            fprintf(stderr, "matcc debug mode enabled\n");
+            debug = true;
+            fprintf(stderr, "YACC debug enabled\n");
             yydebug = 1;
         }
         else if(strcmp(argv[i], "-c") == 0) {
@@ -77,6 +86,18 @@ int main(int argc, char **argv) {
     yyparse();
     quad_list_push(&quad_list, quad_new_empty(NOP));
 
+    if(!parse_successful) {
+        fprintf(stderr, "compilation aborted because of a parse error\n");
+        goto cleanup;
+    }
+
+    if(debug) {
+        fprintf(stderr, "=variables (%zu symbols)\n", ht_size(&symbol_table));
+        symbol_table_print_variables(stderr);
+        fprintf(stderr, "=code ");
+        quad_list_print(stderr, quad_list);
+    }
+
     if(stop_after_quads) {
         fprintf(output_file, "=variables (%zu symbols)\n", ht_size(&symbol_table));
         symbol_table_print_variables(output_file);
@@ -86,7 +107,7 @@ int main(int argc, char **argv) {
     else {
         // Generating MIPS from QUADS
         compute_symbols_lifetime();
-        if(yydebug) print_symbols_lifetime(stderr);
+        if(debug) print_symbols_lifetime(stderr);
 
         symbol_table_print_data_section(output_file);
 
@@ -97,6 +118,7 @@ int main(int argc, char **argv) {
         instruction_list_delete(instruction_list);
     }
 
+    cleanup:
     quad_list_delete(quad_list);
     ht_free(&symbol_table);
 

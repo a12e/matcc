@@ -67,6 +67,32 @@ struct expr_attr declare_float_constant(float floatval) {
     return result;
 }
 
+struct expr_attr declare_matrix_constant(struct matrix *matrix) {
+    struct expr_attr result;
+    union symbol_initial_value value;
+
+    value.matrixval = matrix;
+    result.symbol = symbol_table_push(symbol_new_const(MATRIX, value));
+    result.code = NULL;
+
+    return result;
+}
+
+struct matrix_size declare_matrix_size(size_t height, size_t width) {
+    struct matrix_size result;
+    result.height = height;
+    result.width = width;
+    return result;
+}
+
+struct symbol *declare_matrix(char *name, struct matrix_size size) {
+    struct symbol *s = declare(MATRIX, name);
+    s->size = 8 + size.height * size.width * 4;
+    s->matrix_size.height = size.height;
+    s->matrix_size.width = size.width;
+    return s;
+}
+
 struct expr_attr binary_arithmetic_op(struct expr_attr expr1, enum quad_op op, struct expr_attr expr2) {
     ensure_type_match(expr1.symbol, expr2.symbol);
 

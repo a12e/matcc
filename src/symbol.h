@@ -2,6 +2,8 @@
 #define MATCC_SYMBOL_H
 
 #include <stdbool.h>
+#include <stddef.h>
+#include "matrix.h"
 
 enum symbol_type {
     INT,
@@ -12,18 +14,21 @@ enum symbol_type {
 union symbol_initial_value {
     int intval;
     float floatval;
+    struct matrix *matrixval;
 };
 
 struct symbol {
     char *name;
     enum symbol_type type;
     union symbol_initial_value initial_value;
-    bool temporary;
     bool constant;
+    // Used only when symbol is a matrix
+    struct matrix_size matrix_size;
 
     int start_point;
     int end_point;
     int life_time;
+    size_t size;
     int affected_register;
     int stack_location;
 };
