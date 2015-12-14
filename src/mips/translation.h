@@ -5,10 +5,6 @@
 #include "hash_table.h"
 #include "instruction.h"
 
-#define MAX_REGISTERS 8
-
-extern char *REGSTR[MAX_REGISTERS];
-
 void compute_symbols_lifetime();
 void print_symbols_lifetime(FILE *f);
 

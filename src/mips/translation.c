@@ -71,7 +71,7 @@ struct instruction_list *generate_code() {
     struct instruction_list *instructions = NULL;
     int quad_counter = 0;
 
-    // Allocate registers for each symbol
+    // Allocate normal_registers for each symbol
     linear_scan_register_allocation();
 
     // Put main label
@@ -82,14 +82,14 @@ struct instruction_list *generate_code() {
         snprintf(temp_str, 32, "L%d", quad_counter);
         instruction_list_push(&instructions, instruction_new_label(temp_str, list->quad->comment));
 
-        // Load constants in registers for this quad
+        // Load constants in normal_registers for this quad
         if(list->quad->op1 && list->quad->op1->start_point == quad_counter) {
             instruction_list_push(&instructions, instruction_new(
-                    "lw", REGSTR[list->quad->op1->affected_register], list->quad->op1->name, NULL));
+                    "lw", REG_STR[list->quad->op1->affected_register], list->quad->op1->name, NULL));
         }
         if(list->quad->op2 && list->quad->op2->start_point == quad_counter) {
             instruction_list_push(&instructions, instruction_new(
-                    "lw", REGSTR[list->quad->op2->affected_register], list->quad->op2->name, NULL));
+                    "lw", REG_STR[list->quad->op2->affected_register], list->quad->op2->name, NULL));
         }
 
         switch(list->quad->op) {
@@ -99,8 +99,8 @@ struct instruction_list *generate_code() {
             case MOVE:
                 instruction_list_push(&instructions, instruction_new(
                         "move",
-                        REGSTR[list->quad->res->affected_register],
-                        REGSTR[list->quad->op1->affected_register],
+                        REG_STR[list->quad->res->affected_register],
+                        REG_STR[list->quad->op1->affected_register],
                         NULL
                 ));
                 break;
@@ -109,28 +109,36 @@ struct instruction_list *generate_code() {
             case MUL:
             case DIV: {
                 char *opcode;
-                if(list->quad->res->type == INT)
+                if(list->quad->res->type == INT) {
                     switch(list->quad->op) {
-                        case ADD:   opcode = "add"; break;
-                        case SUB:   opcode = "sub"; break;
-                        case MUL:   opcode = "mul"; break;
-                        case DIV:   opcode = "div"; break;
-                        default:    opcode = NULL; break;
+                        case ADD:opcode = "add";break;
+                        case SUB:opcode = "sub";break;
+                        case MUL:opcode = "mul";break;
+                        case DIV:opcode = "div";break;
+                        default:opcode = NULL;break;
                     }
-                else
+                    instruction_list_push(&instructions, instruction_new(
+                            opcode,
+                            REG_STR[list->quad->res->affected_register],
+                            REG_STR[list->quad->op1->affected_register],
+                            REG_STR[list->quad->op2->affected_register]
+                    ));
+                }
+                else if(list->quad->res->type == FLOAT) {
                     switch(list->quad->op) {
-                        case ADD:   opcode = "add.s"; break;
-                        case SUB:   opcode = "sub.s"; break;
-                        case MUL:   opcode = "mul.s"; break;
-                        case DIV:   opcode = "div.s"; break;
-                        default:    opcode = NULL; break;
+                        case ADD:opcode = "add.s";break;
+                        case SUB:opcode = "sub.s";break;
+                        case MUL:opcode = "mul.s";break;
+                        case DIV:opcode = "div.s";break;
+                        default:opcode = NULL;break;
                     }
-                instruction_list_push(&instructions, instruction_new(
-                        opcode,
-                        REGSTR[list->quad->res->affected_register],
-                        REGSTR[list->quad->op1->affected_register],
-                        REGSTR[list->quad->op2->affected_register]
-                ));
+                    instruction_list_push(&instructions, instruction_new(
+                            opcode,
+                            FREG_STR[list->quad->res->affected_register],
+                            FREG_STR[list->quad->op1->affected_register],
+                            FREG_STR[list->quad->op2->affected_register]
+                    ));
+                }
                 break;
             }
             case B:
@@ -144,44 +152,51 @@ struct instruction_list *generate_code() {
             case BLTE:
             case BGTE: {
                 char *opcode;
-                if(list->quad->res->type == INT)
-                    switch(list->quad->op) {
-                        case BE:    opcode = "beq"; break;
-                        case BNE:   opcode = "bne"; break;
-                        case BLT:   opcode = "blt"; break;
-                        case BGT:   opcode = "bgt"; break;
-                        case BLTE:  opcode = "ble"; break;
-                        case BGTE:  opcode = "bge"; break;
-                        default:    opcode = NULL; break;
-                    }
-                else
-                    switch(list->quad->op) {
-                        case BE:    opcode = "c.eq.s"; break;
-                        case BNE:   opcode = "c.ne.s"; break;
-                        case BLT:   opcode = "c.lt.s"; break;
-                        case BGT:   opcode = "c.gt.s"; break;
-                        case BLTE:  opcode = "c.le.s"; break;
-                        case BGTE:  opcode = "c.ge.s"; break;
-                        default:    opcode = NULL; break;
-                    }
-
                 snprintf(temp_str, 32, "L%d", list->quad->res->initial_value.intval);
-                instruction_list_push(&instructions, instruction_new(
-                        opcode,
-                        REGSTR[list->quad->op1->affected_register],
-                        REGSTR[list->quad->op2->affected_register],
-                        temp_str
-                ));
+                if(list->quad->op1->type == INT) {
+                    switch (list->quad->op) {
+                        case BE:opcode = "beq";break;
+                        case BNE:opcode = "bne";break;
+                        case BLT:opcode = "blt";break;
+                        case BGT:opcode = "bgt";break;
+                        case BLTE:opcode = "ble";break;
+                        case BGTE:opcode = "bge";break;
+                        default:opcode = NULL;break;
+                    }
+                    instruction_list_push(&instructions, instruction_new(
+                            opcode,
+                            REG_STR[list->quad->op1->affected_register],
+                            REG_STR[list->quad->op2->affected_register],
+                            temp_str
+                    ));
+                }
+                else if(list->quad->op1->type == FLOAT) {
+                    switch (list->quad->op) {
+                        case BE:opcode = "c.eq.s";break;
+                        case BNE:opcode = "c.ne.s";break;
+                        case BLT:opcode = "c.lt.s";break;
+                        case BGT:opcode = "c.gt.s";break;
+                        case BLTE:opcode = "c.le.s";break;
+                        case BGTE:opcode = "c.ge.s";break;
+                        default:opcode = NULL;break;
+                    }
+                    instruction_list_push(&instructions, instruction_new(
+                            opcode,
+                            FREG_STR[list->quad->op1->affected_register],
+                            FREG_STR[list->quad->op2->affected_register],
+                            temp_str
+                    ));
+                }
                 break;
             }
             case PRTI:
                 instruction_list_push(&instructions, instruction_new("li", "$v0", "1", NULL));
-                instruction_list_push(&instructions, instruction_new("move", "$a0", REGSTR[list->quad->res->affected_register], NULL));
+                instruction_list_push(&instructions, instruction_new("move", "$a0", REG_STR[list->quad->res->affected_register], NULL));
                 instruction_list_push(&instructions, instruction_new("syscall", NULL, NULL, NULL));
                 break;
             case PRTF:
                 instruction_list_push(&instructions, instruction_new("li", "$v0", "2", NULL));
-                instruction_list_push(&instructions, instruction_new("move", "$f12", REGSTR[list->quad->res->affected_register], NULL));
+                instruction_list_push(&instructions, instruction_new("move", "$f12", FREG_STR[list->quad->res->affected_register], NULL));
                 instruction_list_push(&instructions, instruction_new("syscall", NULL, NULL, NULL));
                 break;
             case PRTS:

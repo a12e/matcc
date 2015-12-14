@@ -22,6 +22,8 @@ add_executable(matcc
 		src/mips/instruction.c
 		src/mips/register_allocation.h
 		src/mips/register_allocation.c
+		src/mips/symbol_array.h
+		src/mips/symbol_array.c
 		src/mips/translation.h
 		src/mips/translation.c
 
