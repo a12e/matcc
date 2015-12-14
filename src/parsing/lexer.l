@@ -20,6 +20,7 @@ identifier      [_a-zA-Z][_a-zA-Z0-9]*
 integer         [0-9]+
 float           [0-9]*\.[0-9]+([eE][-+]?[0-9]+)?
 string          \"[^\"\n]*\"
+comment         (\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)
 
 %%
 
@@ -69,11 +70,17 @@ return          return RETURN;
 					return STRINGCONST;
                 }
 
+{comment}       {
+                    /* do nothing */
+                }
+
 \n              {
                     yycolumn = 1;
                 }
 
-.
+.               {
+                    /* do nothing */
+                }
 
 %%
 
