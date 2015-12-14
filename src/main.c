@@ -78,16 +78,17 @@ int main(int argc, char **argv) {
     if(source_file == NULL) source_file = stdin;
     if(output_file == NULL) output_file = stdout;
 
-    // Generating QUADS from MATC
+    // === Generate QUADS from MATC ===
 
     yyin = source_file;
     ht_init(&symbol_table, 16);
 
     yyparse();
-    quad_list_push(&quad_list, quad_new_empty(NOP));
+    // Add a return statement at the end of the function
+    quad_list_push(&quad_list, quad_new_empty(RET));
 
     if(!parse_successful) {
-        fprintf(stderr, "compilation aborted because of a parse error\n");
+        fprintf(stderr, "compilation aborted\n");
         goto cleanup;
     }
 
@@ -105,7 +106,8 @@ int main(int argc, char **argv) {
         quad_list_print(output_file, quad_list);
     }
     else {
-        // Generating MIPS from QUADS
+        // === Generatine MIPS from QUADS ===
+
         compute_symbols_lifetime();
         if(debug) print_symbols_lifetime(stderr);
 

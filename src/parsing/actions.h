@@ -56,5 +56,9 @@ struct quad_list *control_do_while(struct symbol *statements_tag, struct quad_li
 struct quad_list *control_for(struct expr_attr variable_declaration, struct symbol *condition_tag,
                               struct cond_attr condition, struct symbol *iteration_tag, struct expr_attr iteration,
                               struct symbol *statements_tag, struct quad_list *statements, struct symbol *end_tag);
+struct quad_list *control_return();
+
+struct quad_list *call_function_with_identifier(char *function_name, struct symbol *argument);
+struct quad_list *call_function_with_string(char *function_name, char *string);
 
 #endif //MATCC_ACTIONS_H

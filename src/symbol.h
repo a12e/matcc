@@ -8,12 +8,14 @@
 enum symbol_type {
     INT,
     FLOAT,
+    STRING,
     MATRIX
 };
 
 union symbol_initial_value {
     int intval;
     float floatval;
+    char *stringval;
     struct matrix *matrixval;
 };
 
@@ -24,6 +26,8 @@ struct symbol {
     bool constant;
     // Used only when symbol is a matrix
     struct matrix_size matrix_size;
+    // Wether we access this symbol by adress (we then dont load its value into registers)
+    bool by_adress;
 
     int start_point;
     int end_point;
@@ -41,6 +45,6 @@ struct symbol *symbol_new_temp(enum symbol_type type);
 struct symbol *symbol_new_const(enum symbol_type type, union symbol_initial_value value);
 void symbol_delete(struct symbol *s);
 
-const char *SYMBOL_TYPE_STR[3];
+const char *SYMBOL_TYPE_STR[4];
 
 #endif //MATCC_SYMBOL_H

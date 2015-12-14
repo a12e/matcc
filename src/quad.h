@@ -3,20 +3,25 @@
 
 #include <stdio.h>
 
+
 enum quad_op {
-    NOP,
-    MOVE,
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    B,
+    NOP,    //  Do nothing
+    MOVE,   //  Assign res to op1
+    ADD,    //  res = op1 + op2
+    SUB,    //  res = op1 - op2
+    MUL,    //  res = op1 * op2
+    DIV,    //  res = op1 / op2
+    B,      //  Unconditionnaly go to label res
     BE,
     BNE,
     BLT,
     BGT,
     BLTE,
     BGTE,
+    PRTI,   // Print integer
+    PRTF,   // Print float
+    PRTS,   // Print string
+    RET,    // Return from function
     MAX_QUAD
 };
 

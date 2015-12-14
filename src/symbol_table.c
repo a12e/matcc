@@ -27,16 +27,18 @@ void symbol_table_print_variables(FILE *f) {
             for(ht_bucket *bucket = symbol_table.buckets[i]; bucket != NULL; bucket = bucket->successor)
                 if(bucket->value->constant)
                     switch(bucket->value->type) {
-                        case INT: fprintf(f, "%5s %6s %6d\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case INT: fprintf(f, "%6s %6s %d\n", SYMBOL_TYPE_STR[bucket->value->type],
                                          bucket->value->name, bucket->value->initial_value.intval); break;
-                        case FLOAT: fprintf(f, "%5s %6s %6f\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case FLOAT: fprintf(f, "%6s %6s %f\n", SYMBOL_TYPE_STR[bucket->value->type],
                                          bucket->value->name, bucket->value->initial_value.floatval); break;
-                        case MATRIX: fprintf(f, "%5s %6s (%zux%zu floats)\n", SYMBOL_TYPE_STR[bucket->value->type],
+                        case STRING: fprintf(f, "%6s %6s %s\n", SYMBOL_TYPE_STR[bucket->value->type],
+                                            bucket->value->name, bucket->value->initial_value.stringval); break;
+                        case MATRIX: fprintf(f, "%6s %6s (%zux%zu floats)\n", SYMBOL_TYPE_STR[bucket->value->type],
                                            bucket->value->name, bucket->value->initial_value.matrixval->height,
                                              bucket->value->initial_value.matrixval->width); break;
                     }
                 else {
-                    fprintf(f, "%5s %6s", SYMBOL_TYPE_STR[bucket->value->type], bucket->value->name);
+                    fprintf(f, "%6s %6s", SYMBOL_TYPE_STR[bucket->value->type], bucket->value->name);
                     if(bucket->value->type == MATRIX) fprintf(f, " (%zux%zu floats)",bucket->value->matrix_size.height,
                                                               bucket->value->matrix_size.width);
                     fprintf(f, "\n");
@@ -56,6 +58,9 @@ void symbol_table_print_data_section(FILE *f) {
                         case FLOAT:
                             fprintf(f, "%s: .float %f\n", bucket->value->name, initial_value.floatval);
                             break;
+                        case STRING:
+                            fprintf(f, "%s: .asciiz %s\n", bucket->value->name, initial_value.stringval);
+                            break;
                         case MATRIX:
                             fprintf(f, "%s: .word %zu\n.word %zu\n", bucket->value->name, initial_value.matrixval->height, initial_value.matrixval->width);
                             for(size_t l = 0; l < initial_value.matrixval->height; l++)
@@ -66,8 +71,9 @@ void symbol_table_print_data_section(FILE *f) {
                 }
                 else
                     switch(bucket->value->type) {
-                        case INT: fprintf(f, "%s: .word\n", bucket->value->name); break;
-                        case FLOAT: fprintf(f, "%s: .float\n", bucket->value->name); break;
+                        case INT: fprintf(f, "%s: .word 0\n", bucket->value->name); break;
+                        case FLOAT: fprintf(f, "%s: .float 0.0\n", bucket->value->name); break;
+                        case STRING: break;
                         case MATRIX: fprintf(f, "%s: .word %zu\n.word %zu\n.space %zu\n",
                                              bucket->value->name,
                                              bucket->value->matrix_size.height,

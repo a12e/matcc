@@ -7,6 +7,7 @@
 #define YYDEBUG 1
 %}
 
+// Enable location tracking
 %locations
 
 %printer {
@@ -36,22 +37,23 @@
     fprintf(yyoutput, "<<<");
 } <cond_attr>;
 
-/* Token attributes */
+/* Token and variables attributes */
 %union {
-    char *name;
-    int intval;
-    float floatval;
-    enum symbol_type type;
-    struct symbol* symbol;
-    struct quad_list *quad_list;
-    struct matrix_size matrix_size;
-    struct expr_attr expr_attr;
-    struct matrix *matrix;
-    struct cond_attr cond_attr;
-    enum quad_op quad_op;
+    char *              name;
+    int                 intval;
+    float               floatval;
+    char *              stringval;
+    enum symbol_type    type;
+    struct symbol*      symbol;
+    struct quad_list *  quad_list;
+    struct matrix_size  matrix_size;
+    struct expr_attr    expr_attr;
+    struct matrix *     matrix;
+    struct cond_attr    cond_attr;
+    enum quad_op        quad_op;
 }
 
-/* Lex tokens */
+/* Tokens */
 %token                  T_INT T_FLOAT T_MATRIX
 %token                  IF ELSE TRUE FALSE OR AND NOT
 %token                  EQ NEQ LT GT LTE GTE
@@ -60,6 +62,7 @@
 %token  <name>          IDENTIFIER
 %token  <intval>        INTEGERCONST
 %token  <floatval>      FLOATCONST
+%token  <stringval>     STRINGCONST
 
 /* Analysis variables */
 %type   <type>          type
@@ -103,6 +106,9 @@ statement               :   instruction ';'
 
 instruction             :   variable_declaration            { $$ = $1.code; }
                         |   assignation                     { $$ = $1.code; }
+                        |   IDENTIFIER '(' identifier ')'   { $$ = call_function_with_identifier($1, $3); }
+                        |   IDENTIFIER '(' STRINGCONST ')'  { $$ = call_function_with_string($1, $3); }
+                        |   RETURN                          { $$ = control_return(); }
 
 variable_declaration    :   type IDENTIFIER                 { $$.code = NULL; declare($1, $2); safe_free($2); }
                         |   type IDENTIFIER '=' expression  { $$ = declare_and_assign($1, $2, $4); safe_free($2); }
@@ -114,7 +120,7 @@ type                    :   T_INT                           { $$ = INT; }
                         |   T_FLOAT                         { $$ = FLOAT; }
 
 size_expr               :   '[' INTEGERCONST ']'                        { $$ = declare_matrix_size(1, $2); }
-						|   '[' INTEGERCONST ']' '[' INTEGERCONST ']'   { $$ = declare_matrix_size($2, $5); }
+                        |   '[' INTEGERCONST ']' '[' INTEGERCONST ']'   { $$ = declare_matrix_size($2, $5); }
 
 assignation             :   identifier    '=' expression    { $$ = assign($1, $3); }
 /*
@@ -134,17 +140,17 @@ expression              :   INTEGERCONST                    { $$ = declare_int_c
                         |   expression '/' expression       { $$ = binary_arithmetic_op($1, DIV, $3); }
 
 float_matrix            :   float_list                      { $$ = $1; }
-						|   float_array_list                { $$ = $1; }
+                        |   float_array_list                { $$ = $1; }
 
 float_array_list        :   float_array                     { $$ = $1; }
-						|   float_array_list ','
-							float_array                     { $$ = $1; matrix_append_row($$, $3); matrix_delete($3); }
+                        |   float_array_list ','
+                            float_array                     { $$ = $1; matrix_append_row($$, $3); matrix_delete($3); }
 
 float_array             :   '{' float_list '}'              { $$ = $2; }
 
 float_list              :   FLOATCONST                      { $$ = matrix_new_with_value($1); }
-						|   float_list ','
-							FLOATCONST                      { $$ = $1; matrix_append_value($$, $3); }
+                        |   float_list ','
+                            FLOATCONST                      { $$ = $1; matrix_append_value($$, $3); }
 
 condition               :   condition OR  tag condition     { $$ = condition_or($1, $3, $4); }
                         |   condition AND tag condition     { $$ = condition_and($1, $3, $4); }

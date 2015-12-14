@@ -19,6 +19,7 @@ int yycolumn = 1;
 identifier      [_a-zA-Z][_a-zA-Z0-9]*
 integer         [0-9]+
 float           [0-9]*\.[0-9]+([eE][-+]?[0-9]+)?
+string          \"[^\"\n]*\"
 
 %%
 
@@ -46,7 +47,6 @@ false           return FALSE;
 while           return WHILE;
 do              return DO;
 for             return FOR;
-
 return          return RETURN;
 
 {identifier}    {
@@ -62,6 +62,11 @@ return          return RETURN;
 {float}         {
                     yylval->floatval = strtof(yytext, NULL);
                     return FLOATCONST;
+                }
+
+{string}        {
+					yylval->stringval = safe_strdup(yytext);
+					return STRINGCONST;
                 }
 
 \n              {

@@ -224,3 +224,33 @@ struct quad_list *control_for(struct expr_attr variable_declaration, struct symb
     return quad_list_concat(6, variable_declaration.code, condition.code, iteration.code,
                             quad_list_new(goto_condition), statements, quad_list_new(goto_iteration));
 }
+
+struct quad_list *control_return() {
+    return quad_list_new(quad_new_empty(RET));
+}
+
+struct quad_list *call_function_with_identifier(char *function_name, struct symbol *argument) {
+    if(strcmp(function_name, "print") == 0) {
+        switch(argument->type) {
+            case INT: return quad_list_new(quad_new(PRTI, argument, NULL, NULL));
+            case FLOAT: return quad_list_new(quad_new(PRTF, argument, NULL, NULL));
+            case MATRIX: return NULL;
+        }
+    }
+    else {
+        abort_parsing("unknown function name %s", function_name);
+    }
+}
+
+struct quad_list *call_function_with_string(char *function_name, char *string) {
+    if(strcmp(function_name, "print") == 0) {
+        union symbol_initial_value value;
+        value.stringval = string;
+        struct symbol *s = symbol_new_const(STRING, value);
+        s->by_adress = true;
+        return quad_list_new(quad_new(PRTS, symbol_table_push(symbol_new_const(STRING, value)), NULL, NULL));
+    }
+    else {
+        abort_parsing("unknown function name %s", function_name);
+    }
+}

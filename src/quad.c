@@ -44,7 +44,11 @@ const char *QUAD_OP_STR[MAX_QUAD] = {
         "blt",
         "bgt",
         "blte",
-        "bgte"
+        "bgte",
+        "prti",
+        "prtf",
+        "prts",
+        "ret"
 };
 
 void quad_print(FILE *f, struct quad *q) {

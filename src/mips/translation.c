@@ -174,14 +174,30 @@ struct instruction_list *generate_code() {
                 ));
                 break;
             }
-            case MAX_QUAD: break;
+            case PRTI:
+                instruction_list_push(&instructions, instruction_new("li", "$v0", "1", NULL));
+                instruction_list_push(&instructions, instruction_new("move", "$a0", REGSTR[list->quad->res->affected_register], NULL));
+                instruction_list_push(&instructions, instruction_new("syscall", NULL, NULL, NULL));
+                break;
+            case PRTF:
+                instruction_list_push(&instructions, instruction_new("li", "$v0", "2", NULL));
+                instruction_list_push(&instructions, instruction_new("move", "$f12", REGSTR[list->quad->res->affected_register], NULL));
+                instruction_list_push(&instructions, instruction_new("syscall", NULL, NULL, NULL));
+                break;
+            case PRTS:
+                instruction_list_push(&instructions, instruction_new("li", "$v0", "4", NULL));
+                instruction_list_push(&instructions, instruction_new("la", "$a0", list->quad->res->name, NULL));
+                instruction_list_push(&instructions, instruction_new("syscall", NULL, NULL, NULL));
+                break;
+            case RET:
+                instruction_list_push(&instructions, instruction_new("jal", "$ra", NULL, NULL));
+                break;
+            case MAX_QUAD:
+                break;
         }
 
         quad_counter++;
     }
-
-    // Return
-    instruction_list_push(&instructions, instruction_new("jal", "$ra", NULL, NULL));
 
     return instructions;
 }

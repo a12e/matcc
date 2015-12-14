@@ -5,7 +5,7 @@ unsigned int temps_count = 0;
 unsigned int constants_count = 0;
 
 const char *SYMBOL_TYPE_STR[] = {
-        "int", "float", "matrix"
+        "int", "float", "string", "matrix"
 };
 
 struct symbol *symbol_new(char *name, enum symbol_type type) {
@@ -13,6 +13,7 @@ struct symbol *symbol_new(char *name, enum symbol_type type) {
     s->name = safe_strdup(name);
     s->type = type;
     s->constant = false;
+    s->by_adress = false;
     s->size = 4;
     return s;
 }
@@ -35,5 +36,6 @@ struct symbol *symbol_new_const(enum symbol_type type, union symbol_initial_valu
 
 void symbol_delete(struct symbol *s) {
     safe_free(s->name);
+    if(s->type == STRING) safe_free(s->initial_value.stringval);
     safe_free(s);
 }
