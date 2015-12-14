@@ -67,6 +67,17 @@ struct expr_attr declare_float_constant(float floatval) {
     return result;
 }
 
+struct expr_attr declare_string_constant(char *stringval) {
+    struct expr_attr result;
+    union symbol_initial_value value;
+
+    value.stringval = stringval;
+    result.symbol = symbol_table_push(symbol_new_const(STRING, value));
+    result.code = NULL;
+
+    return result;
+}
+
 struct expr_attr declare_matrix_constant(struct matrix *matrix) {
     struct expr_attr result;
     union symbol_initial_value value;
@@ -229,28 +240,17 @@ struct quad_list *control_return() {
     return quad_list_new(quad_new_empty(RET));
 }
 
-struct quad_list *call_function_with_identifier(char *function_name, struct symbol *argument) {
+struct quad_list *call_function_with_expr(char *function_name, struct expr_attr expr) {
     if(strcmp(function_name, "print") == 0) {
-        switch(argument->type) {
-            case INT: return quad_list_new(quad_new(PRTI, argument, NULL, NULL));
-            case FLOAT: return quad_list_new(quad_new(PRTF, argument, NULL, NULL));
-            case MATRIX: return NULL;
+        switch(expr.symbol->type) {
+            case INT: return quad_list_concat(2, expr.code, quad_list_new(quad_new(PRTI, expr.symbol, NULL, NULL)));
+            case FLOAT: return quad_list_concat(2, expr.code, quad_list_new(quad_new(PRTF, expr.symbol, NULL, NULL)));
+            case STRING: return quad_list_concat(2, expr.code, quad_list_new(quad_new(PRTS, expr.symbol, NULL, NULL)));
+            case MATRIX: return NULL; // TODO
         }
     }
     else {
         abort_parsing("unknown function name %s", function_name);
-    }
-}
-
-struct quad_list *call_function_with_string(char *function_name, char *string) {
-    if(strcmp(function_name, "print") == 0) {
-        union symbol_initial_value value;
-        value.stringval = string;
-        struct symbol *s = symbol_new_const(STRING, value);
-        s->by_adress = true;
-        return quad_list_new(quad_new(PRTS, symbol_table_push(symbol_new_const(STRING, value)), NULL, NULL));
-    }
-    else {
-        abort_parsing("unknown function name %s", function_name);
+        return NULL;
     }
 }

@@ -89,7 +89,7 @@ struct instruction_list *generate_code() {
         }
         if(list->quad->op2 && list->quad->op2->start_point == quad_counter) {
             instruction_list_push(&instructions, instruction_new(
-                    "lw", REGSTR[list->quad->op1->affected_register], list->quad->op2->name, NULL));
+                    "lw", REGSTR[list->quad->op2->affected_register], list->quad->op2->name, NULL));
         }
 
         switch(list->quad->op) {

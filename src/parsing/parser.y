@@ -106,8 +106,7 @@ statement               :   instruction ';'
 
 instruction             :   variable_declaration            { $$ = $1.code; }
                         |   assignation                     { $$ = $1.code; }
-                        |   IDENTIFIER '(' identifier ')'   { $$ = call_function_with_identifier($1, $3); }
-                        |   IDENTIFIER '(' STRINGCONST ')'  { $$ = call_function_with_string($1, $3); }
+                        |   IDENTIFIER '(' expression ')'   { $$ = call_function_with_expr($1, $3); }
                         |   RETURN                          { $$ = control_return(); }
 
 variable_declaration    :   type IDENTIFIER                 { $$.code = NULL; declare($1, $2); safe_free($2); }
@@ -132,6 +131,7 @@ assignation             :   identifier    '=' expression    { $$ = assign($1, $3
 
 expression              :   INTEGERCONST                    { $$ = declare_int_constant($1); }
                         |   FLOATCONST                      { $$ = declare_float_constant($1); }
+                        |   STRINGCONST                     { $$ = declare_string_constant($1); }
                         |   '{' float_matrix '}'            { $$ = declare_matrix_constant($2); }
                         |   identifier                      { $$.code = NULL; $$.symbol = $1; }
                         |   expression '+' expression       { $$ = binary_arithmetic_op($1, ADD, $3); }

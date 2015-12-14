@@ -13,7 +13,6 @@ struct symbol *symbol_new(char *name, enum symbol_type type) {
     s->name = safe_strdup(name);
     s->type = type;
     s->constant = false;
-    s->by_adress = false;
     s->size = 4;
     return s;
 }

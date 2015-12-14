@@ -25,6 +25,7 @@ struct expr_attr assign(struct symbol *dest, struct expr_attr src);
 struct expr_attr declare_and_assign(enum symbol_type type, char *name, struct expr_attr expr);
 struct expr_attr declare_int_constant(int intval);
 struct expr_attr declare_float_constant(float floatval);
+struct expr_attr declare_string_constant(char *stringval);
 struct expr_attr declare_matrix_constant(struct matrix *matrix);
 struct matrix_size declare_matrix_size(size_t height, size_t width);
 struct symbol *declare_matrix(char *name, struct matrix_size size);
@@ -58,7 +59,6 @@ struct quad_list *control_for(struct expr_attr variable_declaration, struct symb
                               struct symbol *statements_tag, struct quad_list *statements, struct symbol *end_tag);
 struct quad_list *control_return();
 
-struct quad_list *call_function_with_identifier(char *function_name, struct symbol *argument);
-struct quad_list *call_function_with_string(char *function_name, char *string);
+struct quad_list *call_function_with_expr(char *function_name, struct expr_attr expr);
 
 #endif //MATCC_ACTIONS_H

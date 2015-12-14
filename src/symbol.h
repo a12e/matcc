@@ -26,8 +26,6 @@ struct symbol {
     bool constant;
     // Used only when symbol is a matrix
     struct matrix_size matrix_size;
-    // Wether we access this symbol by adress (we then dont load its value into registers)
-    bool by_adress;
 
     int start_point;
     int end_point;

@@ -28,6 +28,10 @@ add_test(NAME 22_print_int COMMAND ${TEST} ${source})
 get_filename_component(source 2_print/23_print_float.mcc ABSOLUTE)
 add_test(NAME 23_print_float COMMAND ${TEST} ${source})
 
+# 24_print_matrix
+get_filename_component(source 2_print/24_print_matrix.mcc ABSOLUTE)
+add_test(NAME 24_print_matrix COMMAND ${TEST} ${source})
+
 ################################################################################
 
 # 31_integer_declaration
