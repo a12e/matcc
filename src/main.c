@@ -12,6 +12,7 @@ extern char *yytext;
 extern FILE *yyin;
 extern int yydebug;
 extern int yyparse();
+extern int yylex_destroy();
 bool debug = false;
 extern bool parse_successful;
 
@@ -84,6 +85,7 @@ int main(int argc, char **argv) {
     ht_init(&symbol_table, 16);
 
     yyparse();
+    yylex_destroy();
     // Add a return statement at the end of the function
     quad_list_push(&quad_list, quad_new_empty(RET));
 
@@ -120,7 +122,6 @@ int main(int argc, char **argv) {
         instruction_list_delete(instruction_list);
     }
 
-    cleanup:
     quad_list_delete(quad_list);
     ht_free(&symbol_table);
 

@@ -26,6 +26,7 @@ void symbol_array_remove(struct symbol_array *array, size_t index) {
 }
 
 void symbol_array_free(struct symbol_array *array) {
+    safe_free(array->symbols);
     array->size = 0;
 }
 

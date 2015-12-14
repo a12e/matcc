@@ -68,8 +68,8 @@ void quad_list_print(FILE *f, struct quad_list *list) {
 }
 
 void quad_list_delete(struct quad_list *list) {
-    for(; list != NULL; list = list->successor) {
-        quad_delete(list->quad);
-    }
+    quad_delete(list->quad);
+    if(list->successor) quad_list_delete(list->successor);
+    safe_free(list);
 }
 

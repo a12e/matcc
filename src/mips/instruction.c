@@ -63,8 +63,7 @@ void instruction_delete(struct instruction *i) {
 }
 
 void instruction_list_delete(struct instruction_list *list) {
-    for(struct instruction_list *l = list; l != NULL; l = l->successor) {
-        //instruction_delete(list->i);
-        safe_free(l);
-    }
+    instruction_delete(list->i);
+    if(list->successor) instruction_list_delete(list->successor);
+    safe_free(list);
 }
