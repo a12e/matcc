@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
 
     if(!parse_successful) {
         fprintf(stderr, "compilation aborted\n");
-        goto cleanup;
+        return EXIT_FAILURE;
     }
 
     if(debug) {

@@ -1,0 +1,15 @@
+int main() {
+	int a = 42;
+	int b = 314;
+
+	int c = a + b;
+	int d = a - b;
+
+	c = d * a;
+	d = c / b;
+
+	print(a);
+	print(b);
+	print(c);
+	print(d);
+}
