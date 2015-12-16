@@ -30,6 +30,7 @@ struct expr_attr declare_matrix_constant(struct matrix *matrix);
 struct matrix_size declare_matrix_size(size_t height, size_t width);
 struct symbol *declare_matrix(char *name, struct matrix_size size);
 
+struct expr_attr unary_arithmetic_op(enum quad_op op, struct expr_attr expr);
 struct expr_attr binary_arithmetic_op(struct expr_attr expr1, enum quad_op op, struct expr_attr expr2);
 
 struct cond_attr {

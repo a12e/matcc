@@ -104,6 +104,15 @@ struct symbol *declare_matrix(char *name, struct matrix_size size) {
     return s;
 }
 
+struct expr_attr unary_arithmetic_op(enum quad_op op, struct expr_attr expr) {
+    struct expr_attr result;
+    result.symbol = symbol_new_temp(expr.symbol->type);
+    result.code = quad_list_new(quad_new(op, result.symbol, expr.symbol, NULL));
+    symbol_table_push(result.symbol);
+
+    return result;
+}
+
 struct expr_attr binary_arithmetic_op(struct expr_attr expr1, enum quad_op op, struct expr_attr expr2) {
     ensure_type_match(expr1.symbol, expr2.symbol);
 

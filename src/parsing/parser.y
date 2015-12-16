@@ -134,6 +134,7 @@ expression              :   INTEGERCONST                    { $$ = declare_int_c
                         |   STRINGCONST                     { $$ = declare_string_constant($1); }
                         |   '{' float_matrix '}'            { $$ = declare_matrix_constant($2); }
                         |   identifier                      { $$.code = NULL; $$.symbol = $1; }
+                        |   '-' expression                  { $$ = unary_arithmetic_op(NEG, $2); }
                         |   expression '+' expression       { $$ = binary_arithmetic_op($1, ADD, $3); }
                         |   expression '-' expression       { $$ = binary_arithmetic_op($1, SUB, $3); }
                         |   expression '*' expression       { $$ = binary_arithmetic_op($1, MUL, $3); }

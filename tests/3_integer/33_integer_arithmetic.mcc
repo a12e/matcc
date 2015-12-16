@@ -8,8 +8,9 @@ int main() {
 	c = d * a;
 	d = c / b;
 
-	print(a);
-	print(b);
-	print(c);
-	print(d);
+	print(a); print("\n");
+	print(b); print("\n");
+	print(c); print("\n");
+	print(d); print("\n");
+	print(-d); print("\n");
 }

@@ -122,6 +122,24 @@ struct instruction_list *generate_code() {
                             NULL
                     ));
                 break;
+            case NEG:
+                if(list->quad->res->type == INT) {
+                    instruction_list_push(&instructions, instruction_new(
+                            "neg",
+                            REG_STR[list->quad->res->affected_register],
+                            REG_STR[list->quad->op1->affected_register],
+                            NULL
+                    ));
+                }
+                else if(list->quad->res->type == FLOAT) {
+                    instruction_list_push(&instructions, instruction_new(
+                            "neg.s",
+                            FREG_STR[list->quad->res->affected_register],
+                            FREG_STR[list->quad->op1->affected_register],
+                            NULL
+                    ));
+                }
+                break;
             case ADD:
             case SUB:
             case MUL:

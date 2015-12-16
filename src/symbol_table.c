@@ -65,7 +65,7 @@ void symbol_table_print_data_section(FILE *f) {
                             fprintf(f, "%s: .float %f\n", bucket->value->name, initial_value.floatval);
                             break;
                         case STRING:
-                            fprintf(f, "%s: .asciiz %s\n", bucket->value->name, initial_value.stringval);
+                            fprintf(f, "%s: .align 4\n.asciiz %s\n", bucket->value->name, initial_value.stringval);
                             break;
                         case MATRIX:
                             fprintf(f, "%s: .word %zu\n.word %zu\n", bucket->value->name, initial_value.matrixval->height, initial_value.matrixval->width);

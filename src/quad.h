@@ -6,14 +6,15 @@
 
 enum quad_op {
     NOP,    //  Do nothing
-    MOVE,   //  Assign res to op1
+    MOVE,   //  res = op1
+    NEG,    //  res = - op1
     ADD,    //  res = op1 + op2
     SUB,    //  res = op1 - op2
     MUL,    //  res = op1 * op2
     DIV,    //  res = op1 / op2
     B,      //  Unconditionnaly go to label res
-    BE,
-    BNE,
+    BE,     //  branch if op1 == op2
+    BNE,    //  branch if op1 != op2
     BLT,
     BGT,
     BLTE,

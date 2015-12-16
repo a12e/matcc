@@ -34,6 +34,7 @@ void quad_set_comment(struct quad *q, char *fmt, ...) {
 const char *QUAD_OP_STR[MAX_QUAD] = {
         "nop",
         "move",
+        "neg",
         "add",
         "sub",
         "mul",
