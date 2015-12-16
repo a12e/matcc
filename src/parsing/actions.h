@@ -44,6 +44,7 @@ struct cond_attr condition_and(struct cond_attr cond1, struct symbol *tag, struc
 struct cond_attr condition_not(struct cond_attr op);
 struct cond_attr condition_true();
 struct cond_attr condition_false();
+struct cond_attr condition_from_expression(struct expr_attr expr);
 struct cond_attr condition_compare_expressions(struct expr_attr expr1, enum quad_op quad_op, struct expr_attr expr2);
 
 struct quad_list *control_if(struct cond_attr condition, struct symbol *true_tag, struct quad_list *true_statements,

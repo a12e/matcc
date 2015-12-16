@@ -173,6 +173,28 @@ struct cond_attr condition_false() {
     return result;
 }
 
+struct cond_attr condition_from_expression(struct expr_attr expr) {
+    struct cond_attr result;
+
+    union symbol_initial_value zero;
+    zero.intval = 0;
+    struct symbol *zero_symbol = symbol_table_push(symbol_new_const(INT, zero));
+
+    struct quad *goto_true = quad_new(BNE, NULL, expr.symbol, zero_symbol);
+    quad_set_comment(goto_true, "jump to the true statements");
+    struct quad_list *goto_true_list = quad_list_new(goto_true);
+
+    struct quad *goto_false = quad_new_empty(B);
+    quad_set_comment(goto_false, "jump to the false statements");
+    struct quad_list *goto_false_list = quad_list_new(goto_false);
+
+    result.code = quad_list_concat(3, expr.code, goto_true_list, goto_false_list);
+    result.true_list = goto_true_list;
+    result.false_list = goto_false_list;
+
+    return result;
+}
+
 struct cond_attr condition_compare_expressions(struct expr_attr expr1, enum quad_op quad_op, struct expr_attr expr2) {
     struct cond_attr result;
 
@@ -250,7 +272,7 @@ struct quad_list *control_return() {
 }
 
 struct quad_list *call_function_with_expr(char *function_name, struct expr_attr expr) {
-    if(strcmp(function_name, "print") == 0) {
+    if(strcmp(function_name, "print") == 0 || strcmp(function_name, "printf") == 0) {
         switch(expr.symbol->type) {
             case INT: return quad_list_concat(2, expr.code, quad_list_new(quad_new(PRTI, expr.symbol, NULL, NULL)));
             case FLOAT: return quad_list_concat(2, expr.code, quad_list_new(quad_new(PRTF, expr.symbol, NULL, NULL)));

@@ -139,6 +139,7 @@ expression              :   INTEGERCONST                    { $$ = declare_int_c
                         |   expression '-' expression       { $$ = binary_arithmetic_op($1, SUB, $3); }
                         |   expression '*' expression       { $$ = binary_arithmetic_op($1, MUL, $3); }
                         |   expression '/' expression       { $$ = binary_arithmetic_op($1, DIV, $3); }
+                        |   '(' expression ')'              { memcpy(&$$, &$2, sizeof($$)); }
 
 float_matrix            :   float_list                      { $$ = $1; }
                         |   float_array_list                { $$ = $1; }
@@ -159,6 +160,7 @@ condition               :   condition OR  tag condition     { $$ = condition_or(
                         |   '(' condition ')'               { memcpy(&$$, &$2, sizeof($$)); }
                         |   TRUE                            { $$ = condition_true(); }
                         |   FALSE                           { $$ = condition_false(); }
+                        |   expression                      { $$ = condition_from_expression($1); }
                         |   expression compar_op expression { $$ = condition_compare_expressions($1, $2, $3); }
 
 compar_op               :   EQ                              { $$ = BE; }

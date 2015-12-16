@@ -34,3 +34,26 @@ To see what tests are available run `ctest -N`
 
 To run a single test do `ctest -R 62` where 62 is a regexp choosing the test(s)
 
+Running matcc
+=============
+
+To see how to run matcc, run `./matcc -h` :
+```
+Usage: ./matcc [options] [source_file]
+
+If source_file is not specified, then read form stdin
+
+Options are:
+-h      display this help
+-c      stop the compilation after quad generation
+-o file specifiy output file (stdout by default)
+-d      enable matcc debug mode
+-dd     enable both matcc and YACC debug mode
+```
+
+References
+==========
+
+* Introduction to SPIM Programming
+* [Understanding the Stack](http://www.cs.umd.edu/class/sum2003/cmsc311/Notes/Mips/stack.html)
+* [Linear Scan Register Allocation] (http://web.cs.ucla.edu/~palsberg/course/cs132/linearscan.pdf)
