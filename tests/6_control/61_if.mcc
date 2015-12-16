@@ -1,0 +1,10 @@
+int main() {
+	int b = 5;
+
+	if(b == 5) {
+		print("OK");
+		return;
+	}
+
+	print("NOK");
+}

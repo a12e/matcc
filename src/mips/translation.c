@@ -93,7 +93,9 @@ struct instruction_list *generate_code() {
 
         // Load constants in registers for this quad
         if(list->quad->res && list->quad->res->start_point == quad_counter) {
-            load_symbol_in_register(&instructions, list->quad->res);
+            if(list->quad->op != B && list->quad->op != BNE && list->quad->op != BLT && list->quad->op != BGT
+               && list->quad->op != BLTE && list->quad->op != BGTE && list->quad->op != PRTS)
+                load_symbol_in_register(&instructions, list->quad->res);
         }
         if(list->quad->op1 && list->quad->op1->start_point == quad_counter) {
             load_symbol_in_register(&instructions, list->quad->op1);

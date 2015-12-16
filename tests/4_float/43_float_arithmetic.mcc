@@ -1,0 +1,16 @@
+int main() {
+	float a = 42;
+	float b = 3.14;
+
+	float c = a + b;
+	float d = a - b;
+
+	c = d * a;
+	d = c / b;
+
+	print(a); print("\n");
+	print(b); print("\n");
+	print(c); print("\n");
+	print(d); print("\n");
+	print(-d); print("\n");
+}

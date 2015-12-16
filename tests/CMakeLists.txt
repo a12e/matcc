@@ -48,3 +48,32 @@ add_test(NAME 33_integer_arithmetic COMMAND ${TEST} ${source})
 
 ################################################################################
 
+# 41_float_declaration
+get_filename_component(source 4_float/41_float_declaration.mcc ABSOLUTE)
+add_test(NAME 41_float_declaration COMMAND ${TEST} ${source})
+
+# 42_float_assignation
+get_filename_component(source 4_float/42_float_assignation.mcc ABSOLUTE)
+add_test(NAME 42_float_assignation COMMAND ${TEST} ${source})
+
+# 43_float_arithmetic
+get_filename_component(source 4_float/43_float_arithmetic.mcc ABSOLUTE)
+add_test(NAME 43_float_arithmetic COMMAND ${TEST} ${source})
+
+################################################################################
+
+# 61_if
+get_filename_component(source 6_control/61_if.mcc ABSOLUTE)
+add_test(NAME 61_if COMMAND ${TEST} ${source})
+
+# 62_if_else
+get_filename_component(source 6_control/62_if_else.mcc ABSOLUTE)
+add_test(NAME 62_if_else COMMAND ${TEST} ${source})
+
+# 63_for
+get_filename_component(source 6_control/63_for.mcc ABSOLUTE)
+add_test(NAME 63_for COMMAND ${TEST} ${source})
+
+# 64_while
+get_filename_component(source 6_control/64_while.mcc ABSOLUTE)
+add_test(NAME 64_while COMMAND ${TEST} ${source})
