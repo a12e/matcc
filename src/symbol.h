@@ -39,6 +39,7 @@ struct symbol {
 #define REGISTER_NONE (-1)
 
 struct symbol *symbol_new(char *name, enum symbol_type type);
+struct symbol *symbol_new_user(char *name, enum symbol_type type);
 struct symbol *symbol_new_temp(enum symbol_type type);
 struct symbol *symbol_new_const(enum symbol_type type, union symbol_initial_value value);
 void symbol_delete(struct symbol *s);

@@ -9,6 +9,7 @@ extern hashtable_t symbol_table;
 
 struct symbol *symbol_table_push(struct symbol *s);
 struct symbol *symbol_table_lookup(char *name);
+struct symbol *symbol_table_lookup_user(char *name);
 void symbol_table_print_variables(FILE *f);
 void symbol_table_print_data_section(FILE *f);
 

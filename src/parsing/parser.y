@@ -113,7 +113,7 @@ variable_declaration    :   type IDENTIFIER                 { $$.code = NULL; de
                         |   type IDENTIFIER '=' expression  { $$ = declare_and_assign($1, $2, $4); safe_free($2); }
                         |   T_MATRIX IDENTIFIER size_expr   { $$.code = NULL; declare_matrix($2, $3); safe_free($2); }
 
-identifier              :   IDENTIFIER                      { $$ = symbol_table_lookup($1); safe_free($1); }
+identifier              :   IDENTIFIER                      { $$ = symbol_table_lookup_user($1); safe_free($1); }
 
 type                    :   T_INT                           { $$ = INT; }
                         |   T_FLOAT                         { $$ = FLOAT; }

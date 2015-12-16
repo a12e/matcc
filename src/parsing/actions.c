@@ -26,7 +26,7 @@ void ensure_type_match(struct symbol *s1, struct symbol *s2) {
 }
 
 struct symbol *declare(enum symbol_type type, char *name) {
-    return symbol_table_push(symbol_new(name, type));
+    return symbol_table_push(symbol_new_user(name, type));
 }
 
 struct expr_attr assign(struct symbol *dest, struct expr_attr src) {

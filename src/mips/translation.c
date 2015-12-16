@@ -67,6 +67,15 @@ void print_symbols_lifetime(FILE *f) {
             }
 }
 
+void load_symbol_in_register(struct instruction_list **instructions, struct symbol *symbol) {
+    if(symbol->type == FLOAT) {
+        instruction_list_push(instructions, instruction_new("l.s" , FREG_STR[symbol->affected_register], symbol->name, NULL));
+    }
+    else {
+        instruction_list_push(instructions, instruction_new("lw" , REG_STR[symbol->affected_register], symbol->name, NULL));
+    }
+}
+
 struct instruction_list *generate_code() {
     struct instruction_list *instructions = NULL;
     int quad_counter = 0;
@@ -82,14 +91,15 @@ struct instruction_list *generate_code() {
         snprintf(temp_str, 32, "L%d", quad_counter);
         instruction_list_push(&instructions, instruction_new_label(temp_str, list->quad->comment));
 
-        // Load constants in normal_registers for this quad
+        // Load constants in registers for this quad
+        if(list->quad->res && list->quad->res->start_point == quad_counter) {
+            load_symbol_in_register(&instructions, list->quad->res);
+        }
         if(list->quad->op1 && list->quad->op1->start_point == quad_counter) {
-            instruction_list_push(&instructions, instruction_new(
-                    "lw", REG_STR[list->quad->op1->affected_register], list->quad->op1->name, NULL));
+            load_symbol_in_register(&instructions, list->quad->op1);
         }
         if(list->quad->op2 && list->quad->op2->start_point == quad_counter) {
-            instruction_list_push(&instructions, instruction_new(
-                    "lw", REG_STR[list->quad->op2->affected_register], list->quad->op2->name, NULL));
+            load_symbol_in_register(&instructions, list->quad->op2);
         }
 
         switch(list->quad->op) {
@@ -97,12 +107,20 @@ struct instruction_list *generate_code() {
                 instruction_list_push(&instructions, instruction_new("nop", NULL, NULL, NULL));
                 break;
             case MOVE:
-                instruction_list_push(&instructions, instruction_new(
-                        "move",
-                        REG_STR[list->quad->res->affected_register],
-                        REG_STR[list->quad->op1->affected_register],
-                        NULL
-                ));
+                if(list->quad->res->type == FLOAT)
+                    instruction_list_push(&instructions, instruction_new(
+                            "mov.s",
+                            FREG_STR[list->quad->res->affected_register],
+                            FREG_STR[list->quad->op1->affected_register],
+                            NULL
+                    ));
+                else
+                    instruction_list_push(&instructions, instruction_new(
+                            "move",
+                            REG_STR[list->quad->res->affected_register],
+                            REG_STR[list->quad->op1->affected_register],
+                            NULL
+                    ));
                 break;
             case ADD:
             case SUB:
@@ -196,7 +214,7 @@ struct instruction_list *generate_code() {
                 break;
             case PRTF:
                 instruction_list_push(&instructions, instruction_new("li", "$v0", "2", NULL));
-                instruction_list_push(&instructions, instruction_new("move", "$f12", FREG_STR[list->quad->res->affected_register], NULL));
+                instruction_list_push(&instructions, instruction_new("mov.s", "$f12", FREG_STR[list->quad->res->affected_register], NULL));
                 instruction_list_push(&instructions, instruction_new("syscall", NULL, NULL, NULL));
                 break;
             case PRTS:

@@ -21,6 +21,12 @@ struct symbol *symbol_table_lookup(char *name) {
     return s;
 }
 
+struct symbol *symbol_table_lookup_user(char *name) {
+    char user_symbol[32];
+    snprintf(user_symbol, 32, "_%s", name);
+    return symbol_table_lookup(user_symbol);
+}
+
 void symbol_table_print_variables(FILE *f) {
     for(size_t i = 0; i < symbol_table.size; i++)
         if(symbol_table.buckets[i] != NULL) {

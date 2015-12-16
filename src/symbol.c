@@ -17,11 +17,16 @@ struct symbol *symbol_new(char *name, enum symbol_type type) {
     return s;
 }
 
+struct symbol *symbol_new_user(char *name, enum symbol_type type) {
+    char user_variable_name[32];
+    snprintf(user_variable_name, 32, "_%s", name);
+    return symbol_new(user_variable_name, type);
+}
+
 struct symbol *symbol_new_temp(enum symbol_type type) {
     char temp_name[32];
     snprintf(temp_name, 32, "tmp%d", temps_count++);
-    struct symbol *s = symbol_new(temp_name, type);
-    return s;
+    return symbol_new(temp_name, type);
 }
 
 struct symbol *symbol_new_const(enum symbol_type type, union symbol_initial_value value) {
